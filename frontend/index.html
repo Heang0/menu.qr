@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Digital Menu - Welcome</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom styles including font imports -->
+    
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-md py-4">
+        <nav class="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold text-gray-800 hover:text-blue-600 transition duration-300 mb-4 sm:mb-0">QR Digital Menu</a>
+            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <a href="index.html" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Home</a>
+                <!-- Add more links here if needed, e.g., <a href="about.html" ...>About</a> -->
+                <a href="login.html" class="w-full sm:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300">Login</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-md w-full border border-gray-200">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4 leading-tight">Welcome to <span class="text-blue-600">QR Digital Menu</span></h1>
+            <p class="text-gray-600 text-base sm:text-lg mb-6">Effortlessly manage your restaurant's menu with dynamic QR codes, designed for modern dining.</p>
+            <div class="space-y-4">
+                <a href="login.html" class="block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105">
+                    Get Started (Login)
+                </a>
+                <p class="text-sm text-gray-500 mt-4">Scan a QR code to view a menu directly!</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-4 mt-auto">
+        <div class="container mx-auto px-4 text-center text-sm">
+            &copy; 2025 QR Digital Menu. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

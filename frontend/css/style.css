@@ -1,0 +1,20 @@
+/* qr-digital-menu-system/frontend/css/style.css */
+
+/* --- Google Fonts Imports --- */
+/* For English (or default) professional font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* For Khmer font (Battambang) */
+@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap');
+
+/* --- Tailwind CSS Directives --- */
+/* These lines are essential for Tailwind to work */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- Optional: Custom Global Styles (if needed) --- */
+/* For example, if you wanted a custom scrollbar or specific body background not covered by tailwind classes */
+/* body {
+    scroll-behavior: smooth;
+} */
