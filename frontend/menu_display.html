@@ -11,7 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Preahvihear:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for social media icons and view toggles -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Ensure this CDN link is correct and accessible -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Custom scrollbar for better aesthetics */
         .scrollbar-hide::-webkit-scrollbar {
@@ -23,14 +24,12 @@
         }
 
         /* Apply Preahvihear font as primary for all text.
-           Using a more direct and potentially stronger application here. */
-        body {
-            font-family: 'Preahvihear', serif, sans-serif;
+           Using a very broad selector and !important to ensure application.
+           Added generic Khmer font fallbacks. */
+        body, html, html *, body * { /* More aggressive selector */
+            font-family: 'Preahvihear', 'Khmer OS Battambang', 'Battambang', serif, sans-serif !important;
         }
-        /* Explicitly apply to common elements to ensure coverage */
-        html body, html body * {
-            font-family: 'Preahvihear', serif, sans-serif !important;
-        }
+
 
         /* Custom CSS for sticky elements and scroll behavior */
         html {
