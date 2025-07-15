@@ -1,6 +1,7 @@
 // qr-digital-menu-system/frontend/js/api.js
 
-const API_BASE_URL = 'http://localhost:5000/api'; // <--- IMPORTANT: Change this to your backend URL when deployed!
+// IMPORTANT: Change this to your deployed Render backend URL!
+const API_BASE_URL = 'https://menu-qr-61oz.onrender.com/api'; // <--- Update this line!
 
 /**
  * Helper function to make authenticated API requests.
@@ -41,15 +42,13 @@ async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = 
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-        // Handle cases where the server doesn't return JSON (e.g., 204 No Content)
         const contentType = response.headers.get('content-type');
         let data = null;
         if (contentType && contentType.includes('application/json')) {
             data = await response.json();
         } else {
-            data = await response.text(); // Or handle as text if not JSON
+            data = await response.text();
         }
-
 
         if (!response.ok) {
             const error = data.message || response.statusText || 'Something went wrong';
@@ -61,7 +60,6 @@ async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = 
 
     } catch (error) {
         console.error(`API Error on ${method} ${endpoint}:`, error);
-        // Attempt to parse error if it's a stringified JSON
         let errorMessage = 'An unknown error occurred.';
         let errorStatus = 500;
         try {
@@ -72,14 +70,13 @@ async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = 
             errorMessage = error.message || errorMessage;
         }
 
-        // Handle specific error codes, e.g., 401 Unauthorized
         if (errorStatus === 401) {
             console.warn('Unauthorized request. Redirecting to login.');
             localStorage.removeItem('token');
-            localStorage.removeItem('userRole'); // Clear user role as well
+            localStorage.removeItem('userRole');
             window.location.href = 'login.html';
         }
 
-        throw new Error(errorMessage); // Re-throw a simpler error message for UI
+        throw new Error(errorMessage);
     }
 }
