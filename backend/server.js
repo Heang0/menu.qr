@@ -26,8 +26,6 @@ const app = express();
 // --- Middleware ---
 
 // Configure CORS for specific origins and methods
-// It's crucial to allow your Render frontend URL as an origin.
-// For development, you can keep localhost.
 const corsOptions = {
     origin: [
         'http://localhost:5000', // Your local development frontend
@@ -41,23 +39,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Implement Helmet for basic security headers, including a default CSP
-// This helps prevent common attacks like XSS and clickjacking.
-// We'll customize CSP to allow necessary CDNs.
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"], // Allow Tailwind and QRious CDN
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"], // Allow Google Fonts and Font Awesome
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"], // Allow Google Fonts and data URIs for icons
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"], // Allow Google Fonts and Font Awesome CSS
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"], // ***FIXED: Added cdnjs.cloudflare.com for Font Awesome fonts*** and data URIs for icons
             imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://placehold.co"], // Allow Cloudinary images and placeholders
             connectSrc: ["'self'", "https://generativelanguage.googleapis.com"], // Allow Gemini API calls if used
             objectSrc: ["'none'"],
-            upgradeInsecureRequests: [], // Automatically convert HTTP to HTTPS
+            upgradeInsecureRequests: [],
         },
     },
-    // You can disable specific headers if they cause issues, e.g.:
-    // crossOriginEmbedderPolicy: false,
 }));
 
 
