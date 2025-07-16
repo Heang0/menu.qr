@@ -13,9 +13,175 @@
     <!-- Font Awesome for social media icons and view toggles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Custom CSS (compiled from style.css by Tailwind) -->
-    <link rel="stylesheet" href="./css/dist.css?v=1.0.3"> <!-- Updated cache-busting version -->
+    <link rel="stylesheet" href="./css/dist.css?v=1.0.4"> <!-- Updated cache-busting version -->
+    <style>
+        /* Custom scrollbar for category tabs */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Product card image aspect ratio - square */
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Square aspect ratio */
+            overflow: hidden;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .product-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Custom styles for list view */
+        .product-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0; /* py-3 */
+            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+            cursor: pointer;
+        }
+        .product-list-item:last-child {
+            border-bottom: none;
+        }
+        .product-list-item .list-image-container {
+            position: relative;
+            width: 60px; /* Adjust size for list view */
+            height: 60px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-right: 1rem; /* mr-4 */
+            border: 1px solid #e5e7eb; /* Subtle border for list view image */
+        }
+        .product-list-item .list-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .product-list-item .list-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .product-list-item .list-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .product-list-item .list-content p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        .product-list-item .list-price {
+            flex-shrink: 0;
+            margin-left: 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content-wrapper {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 1.5rem;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 9999px;
+            padding: 0.5rem;
+            transition: background-color 200ms;
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Specific styling for the store info modal content */
+        #storeInfoModal .modal-content-wrapper {
+            max-width: 450px;
+            padding: 2rem;
+        }
+        #storeInfoModal .modal-content-wrapper h2 {
+            font-size: 1.75rem;
+            line-height: 2.25rem;
+        }
+        #storeInfoModal .modal-content-wrapper p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        #storeInfoModal .modal-content-wrapper .text-lg {
+            font-size: 1.125rem;
+        }
+
+        /* Styling for product image popup content */
+        #imagePopupModal .modal-content-wrapper {
+            max-width: 600px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #imagePopupModal .modal-content-wrapper img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+        #imagePopupModal .product-info-container {
+            padding: 0 1rem;
+            text-align: left;
+        }
+        #imagePopupModal .product-info-container h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        #imagePopupModal .product-info-container p {
+            font-size: 0.875rem;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+<body class="bg-gray-100 leading-normal tracking-normal flex flex-col min-h-screen"> <!-- Removed font-sans from body -->
 
     <!-- Sticky Header for Store Info -->
     <header class="bg-white shadow-md py-4 sticky top-0 z-20">
