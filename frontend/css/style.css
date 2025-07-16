@@ -16,13 +16,6 @@
 /* --- Custom Global Styles --- */
 /* This is where you put your custom CSS, which Tailwind will process */
 
-/* Apply Battambang font as primary for all text. */
-/* This rule is now placed at the very end and targets the root html element,
-   which should give it the highest possible priority. */
-html {
-    font-family: 'Battambang', 'Inter', serif, sans-serif !important; /* Prioritize Battambang for Khmer, Inter for English */
-}
-
 /* Custom scrollbar for better aesthetics */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -101,4 +94,31 @@ html {
     font-size: 1rem;
     font-weight: 700;
     color: #ea580c;
+}
+
+/* Apply Battambang font as primary for all text. */
+/* This rule is now placed at the very end and targets the root html element,
+   which should give it the highest possible priority. */
+html {
+    /* Added Khmer OS Battambang as a system fallback */
+    font-family: 'Battambang', 'Khmer OS Battambang', 'Inter', serif, sans-serif !important;
+}
+
+/* Explicit @font-face rules for Battambang with font-display and unicode-range */
+/* This helps browsers optimize loading and rendering */
+@font-face {
+  font-family: 'Battambang';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap; /* Optimize font loading */
+  src: url(https://fonts.gstatic.com/s/battambang/v20/MjQyPgj2c-L0Gq4Wj_CN_w.woff2) format('woff2');
+  unicode-range: U+1780-17FF, U+200C-200D, U+25CC; /* Specify Khmer Unicode range */
+}
+@font-face {
+  font-family: 'Battambang';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap; /* Optimize font loading */
+  src: url(https://fonts.gstatic.com/s/battambang/v20/MjQzPgj2c-L0Gq4Wj_CN_w.woff2) format('woff2');
+  unicode-range: U+1780-17FF, U+200C-200D, U+25CC; /* Specify Khmer Unicode range */
 }
