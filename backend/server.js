@@ -38,20 +38,52 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Implement Helmet for basic security headers, including a default CSP
+// Implement Helmet for comprehensive security headers, especially CSP
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"], // Allow Tailwind and QRious CDN
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"], // Allow Google Fonts and Font Awesome CSS
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "data:"], // ***FIXED: Added cdnjs.cloudflare.com for Font Awesome fonts*** and data URIs for icons
-            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://placehold.co"], // Allow Cloudinary images and placeholders
-            connectSrc: ["'self'", "https://generativelanguage.googleapis.com"], // Allow Gemini API calls if used
-            objectSrc: ["'none'"],
-            upgradeInsecureRequests: [],
+            defaultSrc: ["'self'"], // Only allow resources from the same origin by default
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'", // Required for inline scripts (e.g., Tailwind CDN's JIT mode)
+                "https://cdn.tailwindcss.com", // Tailwind CSS CDN
+                "https://cdn.jsdelivr.net",    // QRious library CDN
+                "https://cdnjs.cloudflare.com" // Font Awesome JS (if you ever use it directly)
+            ],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'", // Required for inline styles
+                "https://fonts.googleapis.com", // Google Fonts CSS
+                "https://cdnjs.cloudflare.com"  // Font Awesome CSS
+            ],
+            fontSrc: [
+                "'self'",
+                "https://fonts.gstatic.com",    // Google Fonts actual font files
+                "https://cdnjs.cloudflare.com", // Font Awesome webfonts (woff2, ttf etc.)
+                "data:"                         // Allow data URIs (e.g., for some inline SVG/base64 icons)
+            ],
+            imgSrc: [
+                "'self'",
+                "data:",                        // Allow data URIs for images
+                "https://res.cloudinary.com",   // Cloudinary images
+                "https://placehold.co"          // Placeholder images
+            ],
+            connectSrc: [
+                "'self'",
+                "https://generativelanguage.googleapis.com", // Gemini API calls
+                "https://menu-qr-61oz.onrender.com" // Explicitly allow connections to your own backend domain
+            ],
+            objectSrc: ["'none'"], // Disallow <object>, <embed>, <applet>
+            mediaSrc: ["'self'"], // Allow media from same origin
+            frameSrc: ["'self'"], // Allow iframes from same origin
+            workerSrc: ["'self'"], // Allow web workers from same origin
+            // upgradeInsecureRequests: [], // Automatically convert HTTP to HTTPS - keep this if you want
         },
     },
+    // You can disable specific headers if they cause issues, e.g.:
+    // crossOriginEmbedderPolicy: false,
+    // crossOriginOpenerPolicy: false,
+    // crossOriginResourcePolicy: false,
 }));
 
 
