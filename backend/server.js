@@ -6,6 +6,7 @@ const cors = require('cors'); // For handling Cross-Origin Resource Sharing
 const connectDB = require('./config/db'); // MongoDB connection
 const connectCloudinary = require('./config/cloudinary'); // Cloudinary connection
 const path = require('path'); // Node.js built-in module for path manipulation
+const helmet = require('helmet'); // For setting security-related HTTP headers
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -17,20 +18,49 @@ const productRoutes = require('./routes/products');
 // Connect to database
 connectDB();
 
-// --- TEMPORARY: ONE-TIME SUPERADMIN REGISTRATION SCRIPT (REMOVED) ---
-// The superadmin has already been created as per your server logs.
-// This script block has been removed for security and clean operation.
-// If you need to reset or create a new superadmin, you should do so
-// manually via MongoDB Compass/Atlas, or by temporarily re-adding
-// a controlled registration route, or managing through the admin panel.
-
 // Connect to Cloudinary
 connectCloudinary();
 
 const app = express();
 
-// Middleware
-app.use(cors()); // Enable CORS for all routes
+// --- Middleware ---
+
+// Configure CORS for specific origins and methods
+// It's crucial to allow your Render frontend URL as an origin.
+// For development, you can keep localhost.
+const corsOptions = {
+    origin: [
+        'http://localhost:5000', // Your local development frontend
+        'https://menu-qr-61oz.onrender.com', // Your deployed Render frontend URL
+        // Add any other domains that need to access your API
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies to be sent
+    optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
+
+// Implement Helmet for basic security headers, including a default CSP
+// This helps prevent common attacks like XSS and clickjacking.
+// We'll customize CSP to allow necessary CDNs.
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"], // Allow Tailwind and QRious CDN
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"], // Allow Google Fonts and Font Awesome
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"], // Allow Google Fonts and data URIs for icons
+            imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://placehold.co"], // Allow Cloudinary images and placeholders
+            connectSrc: ["'self'", "https://generativelanguage.googleapis.com"], // Allow Gemini API calls if used
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: [], // Automatically convert HTTP to HTTPS
+        },
+    },
+    // You can disable specific headers if they cause issues, e.g.:
+    // crossOriginEmbedderPolicy: false,
+}));
+
+
 app.use(express.json()); // Body parser for raw JSON
 app.use(express.urlencoded({ extended: false })); // Body parser for URL-encoded data
 
