@@ -4,8 +4,8 @@
 /* For English (or default) professional font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* For Khmer font (Battambang) */
-@import url('https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap');
+/* For Khmer font (Preahvihear) */
+@import url('https://fonts.googleapis.com/css2?family=Preahvihear:wght@400;700&display=swap');
 
 /* --- Tailwind CSS Directives --- */
 /* These lines are essential for Tailwind to work */
@@ -13,8 +13,94 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- Optional: Custom Global Styles (if needed) --- */
-/* For example, if you wanted a custom scrollbar or specific body background not covered by tailwind classes */
-/* body {
-    scroll-behavior: smooth;
-} */
+/* --- Custom Global Styles --- */
+/* This is where you put your custom CSS, which Tailwind will process */
+
+/* Custom scrollbar for better aesthetics */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Product card image aspect ratio - square (from menu_display.html) */
+.product-image-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    overflow: hidden;
+    border-radius: 0.5rem; /* Rounded corners for images in grid view */
+}
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Custom styles for list view (from menu_display.html) */
+.product-list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    cursor: pointer;
+}
+.product-list-item:last-child {
+    border-bottom: none;
+}
+.product-list-item .list-image-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    margin-right: 1rem;
+    border: 1px solid #e5e7eb;
+}
+.product-list-item .list-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.product-list-item .list-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.product-list-item .list-content h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+.product-list-item .list-content p {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.3;
+}
+.product-list-item .list-price {
+    flex-shrink: 0;
+    margin-left: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ea580c;
+}
+
+/* Apply Preahvihear for Khmer characters, and Inter for Latin characters/general use */
+/* MOVED TO END OF FILE FOR HIGHEST SPECIFICITY */
+body, html, html *, body *,
+h1, h2, h3, h4, h5, h6,
+p, a, span, div, li, th, td,
+input, select, textarea, button {
+    font-family: 'Preahvihear', 'Inter', sans-serif !important; /* Force Preahvihear for Khmer, Inter for English */
+}
