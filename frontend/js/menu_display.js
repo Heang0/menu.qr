@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const socialTikTok = document.getElementById('socialTikTok');
     const socialWebsite = document.getElementById('socialWebsite');
 
-    // New: View Toggle Buttons
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
 
@@ -81,7 +80,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 categoriesToRender.forEach((category, index) => {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
-                    a.href = `#${category._id}`;
+                    // FIX: Prepend 'cat-' to category._id to make it a valid CSS selector
+                    a.href = `#cat-${category._id}`;
                     a.textContent = category.name;
                     a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
                     if (index === 0) {
@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             tab.classList.remove('border-orange-600', 'text-orange-600');
                         });
                         a.classList.add('border-orange-600', 'text-orange-600');
+                        // FIX: Use the prepended ID for querySelector
                         document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
                     });
                     li.appendChild(a);
@@ -122,7 +123,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (categoriesToRender.length > 0) {
                 categoriesToRender.forEach(category => {
                     const categorySection = document.createElement('section');
-                    categorySection.id = category._id;
+                    // FIX: Prepend 'cat-' to category._id for the section ID
+                    categorySection.id = `cat-${category._id}`;
                     categorySection.classList.add('mb-8');
 
                     const categoryTitle = document.createElement('h2');
@@ -136,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const noItemsMessage = document.createElement('p');
                         noItemsMessage.classList.add('text-gray-500', 'text-center', 'col-span-full');
                         noItemsMessage.textContent = 'No items in this category yet.';
-                        categorySection.appendChild(noItemsMessage); // Append to section directly
+                        categorySection.appendChild(noItemsMessage);
                     } else {
                         if (currentView === 'grid') {
                             const productGrid = document.createElement('div');
@@ -241,9 +243,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Helper function to create a product item for list view
         function createProductListItem(product) {
             const listItem = document.createElement('div');
-            listItem.classList.add('product-list-item'); // Custom class for list item styling
+            listItem.classList.add('product-list-item');
 
-            const defaultImage = `https://placehold.co/60x60/e2e8f0/64748b?text=No+Img`; // Placeholder for list view
+            const defaultImage = `https://placehold.co/60x60/e2e8f0/64748b?text=No+Img`;
 
             const imgContainer = document.createElement('div');
             imgContainer.classList.add('list-image-container');
@@ -390,7 +392,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gridViewBtn.classList.add('text-orange-600');
                 listViewBtn.classList.remove('text-orange-600');
                 listViewBtn.classList.add('text-gray-400');
-                renderMenuContent(allProducts, categories); // Re-render with current filters
+                // Re-render with current filters (from search input)
+                const searchTerm = searchMenuInput.value.toLowerCase();
+                const filteredProducts = allProducts.filter(product =>
+                    product.title.toLowerCase().includes(searchTerm) ||
+                    (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                    (product.category && product.category.name.toLowerCase().includes(searchTerm))
+                );
+                const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
+                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
+                renderMenuContent(filteredProducts, categoriesForFilteredProducts);
             });
         }
 
@@ -400,14 +411,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listViewBtn.classList.add('text-orange-600');
                 gridViewBtn.classList.remove('text-orange-600');
                 gridViewBtn.classList.add('text-gray-400');
-                renderMenuContent(allProducts, categories); // Re-render with current filters
+                // Re-render with current filters (from search input)
+                const searchTerm = searchMenuInput.value.toLowerCase();
+                const filteredProducts = allProducts.filter(product =>
+                    product.title.toLowerCase().includes(searchTerm) ||
+                    (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                    (product.category && product.category.name.toLowerCase().includes(searchTerm))
+                );
+                const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
+                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
+                renderMenuContent(filteredProducts, categoriesForFilteredProducts);
             });
         }
 
 
         // Initial render
+        // This initial call will trigger the first rendering based on default 'grid' view
         renderCategoryTabs(categories);
-        renderMenuContent(allProducts, categories); // Initial render will use default 'grid' view
+        renderMenuContent(allProducts, categories);
 
         // Search functionality
         searchMenuInput.addEventListener('input', (e) => {

@@ -11,7 +11,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Preahvihear:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for social media icons and view toggles -->
-    <!-- Ensure this CDN link is correct and accessible -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Custom scrollbar for better aesthetics */
@@ -23,11 +22,30 @@
             scrollbar-width: none;
         }
 
-        /* Apply Preahvihear font as primary for all text.
-           Using a very broad selector and !important to ensure application.
-           Added generic Khmer font fallbacks. */
-        body, html, html *, body * { /* More aggressive selector */
-            font-family: 'Preahvihear', 'Khmer OS Battambang', 'Battambang', serif, sans-serif !important;
+        /* Apply Preahvihear font as primary for ALL text elements, using !important */
+        /* This targets almost every element to ensure font application */
+        body, html, html *, body *,
+        h1, h2, h3, h4, h5, h6,
+        p, a, span, div, li, th, td,
+        input, select, textarea, button {
+            font-family: 'Preahvihear', serif, sans-serif !important;
+        }
+        /* Ensure font-display is swap for better loading experience */
+        @font-face {
+            font-family: 'Preahvihear';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap; /* Add font-display: swap */
+            src: url(https://fonts.gstatic.com/s/preahvihear/v20/6NU58f-dNQeYnjZ7YUluxwW6d.woff2) format('woff2'); /* Direct link for woff2 */
+            unicode-range: U+1780-17FF, U+200C-200D, U+25CC; /* Explicitly define unicode range for Khmer */
+        }
+        @font-face {
+            font-family: 'Preahvihear';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap; /* Add font-display: swap */
+            src: url(https://fonts.gstatic.com/s/preahvihear/v20/6NU58f-dNQeYnjZ7YUluxwW6d.woff2) format('woff2'); /* Direct link for woff2 */
+            unicode-range: U+1780-17FF, U+200C-200D, U+25CC;
         }
 
 
