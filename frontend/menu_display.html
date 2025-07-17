@@ -1,30 +1,202 @@
+
 <!DOCTYPE html>
 <html lang="km">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="menuTitle">Loading Menu...</title>
-    <!-- Tailwind CSS CDN - REMOVED, relying on local dist.css -->
-    <!-- Google Fonts Import for Battambang (Khmer) - REMOVED, handled by style.css -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Import for Battambang (Khmer) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for social media icons and view toggles -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Custom CSS (compiled from style.css by Tailwind) -->
-    <link rel="stylesheet" href="./css/dist.css"> 
+    <link rel="stylesheet" href="./css/dist.css?v=1.0.4"> <!-- Updated cache-busting version -->
+    <style>
+        /* Custom scrollbar for category tabs */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Product card image aspect ratio - square */
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* Square aspect ratio */
+            overflow: hidden;
+            border-radius: 0.5rem; /* rounded-lg */
+        }
+        .product-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Custom styles for list view */
+        .product-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0; /* py-3 */
+            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+            cursor: pointer;
+        }
+        .product-list-item:last-child {
+            border-bottom: none;
+        }
+        .product-list-item .list-image-container {
+            position: relative;
+            width: 60px; /* Adjust size for list view */
+            height: 60px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin-right: 1rem; /* mr-4 */
+            border: 1px solid #e5e7eb; /* Subtle border for list view image */
+        }
+        .product-list-item .list-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .product-list-item .list-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .product-list-item .list-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        .product-list-item .list-content p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.3;
+        }
+        .product-list-item .list-price {
+            flex-shrink: 0;
+            margin-left: 1rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ea580c;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+            backdrop-filter: blur(4px);
+        }
+        .modal-content-wrapper {
+            background-color: white;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 1.5rem;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border-radius: 9999px;
+            padding: 0.5rem;
+            transition: background-color 200ms;
+            z-index: 10;
+        }
+        .modal-close-btn:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Specific styling for the store info modal content */
+        #storeInfoModal .modal-content-wrapper {
+            max-width: 450px;
+            padding: 2rem;
+        }
+        #storeInfoModal .modal-content-wrapper h2 {
+            font-size: 1.75rem;
+            line-height: 2.25rem;
+        }
+        #storeInfoModal .modal-content-wrapper p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        #storeInfoModal .modal-content-wrapper .text-lg {
+            font-size: 1.125rem;
+        }
+
+        /* Styling for product image popup content */
+        #imagePopupModal .modal-content-wrapper {
+            max-width: 600px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #imagePopupModal .modal-content-wrapper img {
+            max-width: 100%;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+        #imagePopupModal .product-info-container {
+            padding: 0 1rem;
+            text-align: left;
+        }
+        #imagePopupModal .product-info-container h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        #imagePopupModal .product-info-container p {
+            font-size: 0.875rem;
+            color: #4b5563;
+            line-height: 1.4;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen text-gray-800">
+<body class="bg-gray-100 leading-normal tracking-normal flex flex-col min-h-screen"> <!-- Removed font-sans from body -->
+
     <!-- Sticky Header for Store Info -->
     <header class="bg-white shadow-md py-4 sticky top-0 z-20">
         <div class="container mx-auto px-4 flex items-center justify-between">
             <div id="storeHeaderInfo" class="flex items-center space-x-3 cursor-pointer">
                 <img id="storeLogo" src="" alt="Store Logo" class="h-12 w-12 object-contain rounded-full border border-orange-500 p-1 bg-white" style="display: none;">
-                <h1 id="storeName" class="text-xl font-bold text-gray-800 sm:text-2xl"></h1>
+                <h1 id="storeName" class="text-xl sm:text-2xl font-bold text-gray-800"></h1>
             </div>
             <!-- View Toggle Icons -->
             <div class="flex items-center space-x-3">
-                <button id="gridViewBtn" class="text-orange-600 focus:outline-none transition duration-200 hover:text-orange-800">
+                <button id="gridViewBtn" class="text-orange-600 hover:text-orange-800 focus:outline-none">
                     <i class="fas fa-th-large text-xl"></i> <!-- Grid icon -->
                 </button>
-                <button id="listViewBtn" class="text-gray-400 focus:outline-none transition duration-200 hover:text-orange-600">
+                <button id="listViewBtn" class="text-gray-400 hover:text-orange-600 focus:outline-none">
                     <i class="fas fa-list text-xl"></i> <!-- List icon -->
                 </button>
             </div>
@@ -35,7 +207,7 @@
     <div class="bg-white py-3 px-4 shadow-sm border-b border-gray-200">
         <div class="container mx-auto">
             <div class="relative">
-                <input type="text" id="searchMenuInput" placeholder="Search menus..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-700 transition">
+                <input type="text" id="searchMenuInput" placeholder="Search menus..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-700">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
         </div>
@@ -43,30 +215,30 @@
 
     <!-- Sticky Category Tabs -->
     <nav class="bg-white shadow-sm sticky top-[72px] z-15 border-b border-gray-200">
-        <div class="container mx-auto overflow-x-auto whitespace-nowrap scrollbar-hide">
+        <div class="container mx-auto px-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
             <ul id="categoryTabs" class="flex space-x-4 py-2">
                 <!-- Category tabs will be loaded here by JavaScript -->
             </ul>
         </div>
     </nav>
 
-    <main class="container mx-auto py-6 flex-grow">
+    <main class="container mx-auto px-4 py-6 flex-grow">
         <div id="menuContent">
             <!-- Menu items will be loaded here by JavaScript, grouped by category -->
-            <p id="loadingMessage" class="text-center text-lg text-gray-500 mt-12">Loading menu...</p>
-            <p id="noMenuMessage" class="text-center text-lg text-gray-500 mt-12 hidden">No menu items found for this store.</p>
-            <p id="noSearchResultsMessage" class="text-center text-lg text-gray-500 mt-12 hidden">No matching items found.</p>
+            <p id="loadingMessage" class="text-center text-gray-500 text-lg mt-12">Loading menu...</p>
+            <p id="noMenuMessage" class="text-center text-gray-500 text-lg mt-12 hidden">No menu items found for this store.</p>
+            <p id="noSearchResultsMessage" class="text-center text-gray-500 text-lg mt-12 hidden">No matching items found.</p>
         </div>
     </main>
 
-    <footer>
+    <footer class="bg-orange-600 text-white py-4 mt-auto">
         <div class="container mx-auto px-4 text-center text-sm">
             &copy; 2025 QR Digital Menu. All rights reserved.
         </div>
     </footer>
 
     <!-- Image Popup Modal Structure -->
-    <div id="imagePopupModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-filter blur" style="display: none;">
+    <div id="imagePopupModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md md:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto relative p-4 flex flex-col items-center">
             <button id="closeImagePopupBtn" class="absolute top-3 right-3 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white z-10">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -80,17 +252,17 @@
     </div>
 
     <!-- Store Info Popup Modal Structure -->
-    <div id="storeInfoModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-filter blur" style="display: none;">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative text-center">
+    <div id="storeInfoModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative p-6 text-center">
             <button id="closeStoreInfoBtn" class="absolute top-3 right-3 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white z-10">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <div class="modal-content-inner">
+            <div class="p-4">
                 <img id="modalStoreLogo" src="" alt="Store Logo" class="h-24 w-24 object-contain rounded-full border border-orange-500 p-1 mx-auto mb-4" style="display: none;">
                 <h2 id="modalStoreName" class="text-2xl font-bold text-gray-800 mb-2"></h2>
                 <p id="modalStoreDescription" class="text-gray-600 text-sm mb-4"></p>
 
-                <div class="flex flex-col space-y-3 mb-4">
+                <div class="space-y-3 mb-4">
                     <p id="modalStorePhone" class="text-gray-700 text-lg font-semibold flex items-center justify-center">
                         <i class="fas fa-phone-alt mr-2 text-orange-500"></i>
                         <span></span>

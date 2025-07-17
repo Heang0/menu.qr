@@ -1,3 +1,4 @@
+
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -37,18 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const listViewBtn = document.getElementById('listViewBtn');
 
     let allProducts = [];
-    let allCategories = []; // Store all categories for filtering
     let currentStoreData = null;
     let currentView = 'grid'; // Default view
-
-    // Ensure modals are hidden by default using inline style for immediate effect.
-    // This is a fallback in case the HTML's inline style is somehow overridden or not applied instantly.
-    if (imagePopupModal) {
-        imagePopupModal.style.display = 'none';
-    }
-    if (storeInfoModal) {
-        storeInfoModal.style.display = 'none';
-    }
 
     if (!storeId) {
         menuTitle.textContent = 'Menu Not Found';
@@ -73,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             storeLogoImg.style.display = 'none';
         }
 
-        allCategories = await apiRequest(`/categories/store/${storeId}`, 'GET', null, false);
+        const categories = await apiRequest(`/categories/store/${storeId}`, 'GET', null, false);
         allProducts = await apiRequest(`/products/store/${storeId}`, 'GET', null, false);
 
         loadingMessage.classList.add('hidden');
@@ -90,31 +81,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 categoriesToRender.forEach((category, index) => {
                     const li = document.createElement('li');
                     const a = document.createElement('a');
+                    // FIX: Prepend 'cat-' to category._id to make it a valid CSS selector
                     a.href = `#cat-${category._id}`;
                     a.textContent = category.name;
-                    // Apply Tailwind CSS classes
-                    a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'transition', 'duration-300', 'hover:border-orange-500', 'hover:text-orange-600');
+                    a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
                     if (index === 0) {
-                        a.classList.add('active', 'border-orange-600', 'text-orange-600'); // Add 'active' class for the first tab
+                        a.classList.add('border-orange-600', 'text-orange-600');
                     }
                     a.addEventListener('click', (e) => {
                         e.preventDefault();
                         document.querySelectorAll('#categoryTabs a').forEach(tab => {
-                            tab.classList.remove('active', 'border-orange-600', 'text-orange-600');
+                            tab.classList.remove('border-orange-600', 'text-orange-600');
                         });
-                        a.classList.add('active', 'border-orange-600', 'text-orange-600');
+                        a.classList.add('border-orange-600', 'text-orange-600');
+                        // FIX: Use the prepended ID for querySelector
                         document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
                     });
                     li.appendChild(a);
                     categoryTabs.appendChild(li);
                 });
             } else {
-                // If no categories, show an "All Items" tab
                 const li = document.createElement('li');
                 const a = document.createElement('a');
                 a.href = `#all-items`;
                 a.textContent = 'All Items';
-                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'transition', 'duration-300', 'hover:border-orange-500', 'hover:text-orange-600', 'active', 'border-orange-600', 'text-orange-600');
+                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-orange-600', 'text-orange-600');
                 li.appendChild(a);
                 categoryTabs.appendChild(li);
             }
@@ -130,15 +121,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // If there are categories, group products by category
             if (categoriesToRender.length > 0) {
                 categoriesToRender.forEach(category => {
                     const categorySection = document.createElement('section');
+                    // FIX: Prepend 'cat-' to category._id for the section ID
                     categorySection.id = `cat-${category._id}`;
-                    categorySection.classList.add('mb-8'); // Tailwind class
+                    categorySection.classList.add('mb-8');
 
                     const categoryTitle = document.createElement('h2');
-                    categoryTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-[104px]', 'bg-gray-100', 'z-10', 'py-2'); // Tailwind classes
+                    categoryTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
                     categoryTitle.textContent = category.name;
                     categorySection.appendChild(categoryTitle);
 
@@ -146,20 +137,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (productsInCategory.length === 0) {
                         const noItemsMessage = document.createElement('p');
-                        noItemsMessage.classList.add('text-gray-500', 'text-center', 'col-span-full'); // Tailwind classes
+                        noItemsMessage.classList.add('text-gray-500', 'text-center', 'col-span-full');
                         noItemsMessage.textContent = 'No items in this category yet.';
                         categorySection.appendChild(noItemsMessage);
                     } else {
                         if (currentView === 'grid') {
                             const productGrid = document.createElement('div');
-                            productGrid.classList.add('grid', 'grid-cols-2', 'gap-4', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4'); // Tailwind classes
+                            productGrid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-4');
                             productsInCategory.forEach(product => {
                                 productGrid.appendChild(createProductGridCard(product));
                             });
                             categorySection.appendChild(productGrid);
                         } else { // List View
                             const productList = document.createElement('div');
-                            productList.classList.add('divide-y', 'divide-gray-200'); // Tailwind classes
+                            productList.classList.add('divide-y', 'divide-gray-200');
                             productsInCategory.forEach(product => {
                                 productList.appendChild(createProductListItem(product));
                             });
@@ -169,26 +160,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                     menuContent.appendChild(categorySection);
                 });
             } else {
-                // If no categories, display all products under a single "All Items" section
                 const allItemsSection = document.createElement('section');
                 allItemsSection.id = 'all-items';
-                allItemsSection.classList.add('mb-8'); // Tailwind class
+                allItemsSection.classList.add('mb-8');
 
                 const allItemsTitle = document.createElement('h2');
-                allItemsTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-[104px]', 'bg-gray-100', 'z-10', 'py-2'); // Tailwind classes
+                allItemsTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
                 allItemsTitle.textContent = 'All Items';
                 allItemsSection.appendChild(allItemsTitle);
 
                 if (currentView === 'grid') {
                     const productGrid = document.createElement('div');
-                    productGrid.classList.add('grid', 'grid-cols-2', 'gap-4', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4'); // Tailwind classes
+                    productGrid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-4');
                     productsToRender.forEach(product => {
                         productGrid.appendChild(createProductGridCard(product));
                     });
                     allItemsSection.appendChild(productGrid);
                 } else { // List View
                     const productList = document.createElement('div');
-                    productList.classList.add('divide-y', 'divide-gray-200'); // Tailwind classes
+                    productList.classList.add('divide-y', 'divide-gray-200');
                     productsToRender.forEach(product => {
                         productList.appendChild(createProductListItem(product));
                     });
@@ -201,44 +191,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Helper function to create a product card for grid view
         function createProductGridCard(product) {
             const productCard = document.createElement('div');
-            productCard.classList.add('bg-white', 'rounded-lg', 'shadow-md', 'overflow-hidden', 'flex', 'flex-col', 'cursor-pointer'); // Tailwind classes
+            productCard.classList.add('bg-white', 'rounded-lg', 'shadow-md', 'overflow-hidden', 'flex', 'flex-col', 'cursor-pointer');
 
             const imgContainer = document.createElement('div');
-            imgContainer.classList.add('product-image-container'); // Custom CSS class from style.css
+            imgContainer.classList.add('product-image-container');
             const defaultImage = `https://placehold.co/400x400/e2e8f0/64748b?text=No+Image`;
             if (product.image) {
                 const img = document.createElement('img');
                 img.src = product.image;
                 img.alt = product.title;
-                img.classList.add('product-image'); // Custom CSS class from style.css
+                img.classList.add('product-image');
                 imgContainer.appendChild(img);
             } else {
                 const placeholderImg = document.createElement('img');
                 placeholderImg.src = defaultImage;
                 placeholderImg.alt = 'No Image Available';
-                placeholderImg.classList.add('product-image'); // Custom CSS class from style.css
+                placeholderImg.classList.add('product-image');
                 imgContainer.appendChild(placeholderImg);
             }
             productCard.appendChild(imgContainer);
 
             const cardContent = document.createElement('div');
-            cardContent.classList.add('p-3', 'flex-grow', 'flex', 'flex-col', 'justify-between'); // Tailwind classes
+            cardContent.classList.add('p-3', 'flex-grow', 'flex', 'flex-col', 'justify-between');
 
             const title = document.createElement('h3');
-            title.classList.add('text-base', 'font-semibold', 'text-gray-800', 'mb-1'); // Tailwind classes
+            title.classList.add('text-base', 'font-semibold', 'text-gray-800', 'mb-1');
             title.textContent = product.title;
             cardContent.appendChild(title);
 
             if (product.description) {
                 const description = document.createElement('p');
-                description.classList.add('text-gray-600', 'text-xs', 'mb-2', 'line-clamp-2'); // Tailwind classes
+                description.classList.add('text-gray-600', 'text-xs', 'mb-2', 'line-clamp-2');
                 description.textContent = product.description;
                 cardContent.appendChild(description);
             }
 
             if (product.price !== undefined && product.price !== null) {
                 const price = document.createElement('p');
-                price.classList.add('text-orange-600', 'font-bold', 'text-md'); // Tailwind classes
+                price.classList.add('text-orange-600', 'font-bold', 'text-md');
                 price.textContent = `$${product.price.toFixed(2)}`;
                 cardContent.appendChild(price);
             }
@@ -254,38 +244,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Helper function to create a product item for list view
         function createProductListItem(product) {
             const listItem = document.createElement('div');
-            listItem.classList.add('flex', 'items-center', 'py-3', 'border-b', 'border-gray-200', 'cursor-pointer'); // Tailwind classes
+            listItem.classList.add('product-list-item');
 
             const defaultImage = `https://placehold.co/60x60/e2e8f0/64748b?text=No+Img`;
 
             const imgContainer = document.createElement('div');
-            imgContainer.classList.add('list-image-container'); // Custom CSS class from style.css
+            imgContainer.classList.add('list-image-container');
             if (product.image) {
                 const img = document.createElement('img');
                 img.src = product.image;
                 img.alt = product.title;
-                img.classList.add('list-image'); // Custom CSS class from style.css
+                img.classList.add('list-image');
                 imgContainer.appendChild(img);
             } else {
                 const placeholderImg = document.createElement('img');
                 placeholderImg.src = defaultImage;
                 placeholderImg.alt = 'No Image Available';
-                placeholderImg.classList.add('list-image'); // Custom CSS class from style.css
+                placeholderImg.classList.add('list-image');
                 imgContainer.appendChild(placeholderImg);
             }
             listItem.appendChild(imgContainer);
 
             const listContent = document.createElement('div');
-            listContent.classList.add('flex-grow', 'flex', 'flex-col', 'justify-center'); // Tailwind classes
+            listContent.classList.add('list-content');
 
             const title = document.createElement('h3');
-            title.classList.add('text-base', 'font-semibold', 'text-gray-800', 'mb-1'); // Tailwind classes
             title.textContent = product.title;
             listContent.appendChild(title);
 
             if (product.description) {
                 const description = document.createElement('p');
-                description.classList.add('text-xs', 'text-gray-600', 'line-clamp-2'); // Tailwind classes
                 description.textContent = product.description;
                 listContent.appendChild(description);
             }
@@ -293,7 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (product.price !== undefined && product.price !== null) {
                 const price = document.createElement('p');
-                price.classList.add('flex-shrink-0', 'ml-4', 'text-base', 'font-bold', 'text-orange-600'); // Tailwind classes
+                price.classList.add('list-price');
                 price.textContent = `$${product.price.toFixed(2)}`;
                 listItem.appendChild(price);
             }
@@ -310,12 +298,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             popupImage.src = imageUrl;
             popupProductName.textContent = productName;
             popupProductDescription.textContent = productDescription || 'No description available.';
-            imagePopupModal.style.display = 'flex'; // Use style.display to show
+            imagePopupModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
         function closeImagePopup() {
-            imagePopupModal.style.display = 'none'; // Use style.display to hide
+            imagePopupModal.classList.add('hidden');
             popupImage.src = '';
             popupProductName.textContent = '';
             popupProductDescription.textContent = '';
@@ -338,7 +326,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalStorePhone.textContent = currentStoreData.phone || 'N/A';
             modalStoreAddress.textContent = currentStoreData.address || 'N/A';
 
-            // Social media links visibility
             if (currentStoreData.facebookUrl) {
                 socialFacebook.href = currentStoreData.facebookUrl;
                 socialFacebook.classList.remove('hidden');
@@ -360,12 +347,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else { socialWebsite.classList.add('hidden'); }
 
 
-            storeInfoModal.style.display = 'flex'; // Use style.display to show
+            storeInfoModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
         function closeStoreInfoPopup() {
-            storeInfoModal.style.display = 'none'; // Use style.display to hide
+            storeInfoModal.classList.add('hidden');
             document.body.style.overflow = '';
         }
 
@@ -381,7 +368,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Close popup if clicking on the overlay itself
         if (imagePopupModal) {
             imagePopupModal.addEventListener('click', (e) => {
-                // Check if the click target is the overlay itself, not its children
                 if (e.target === imagePopupModal) {
                     closeImagePopup();
                 }
@@ -389,7 +375,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (storeInfoModal) {
             storeInfoModal.addEventListener('click', (e) => {
-                // Check if the click target is the overlay itself, not its children
                 if (e.target === storeInfoModal) {
                     closeStoreInfoPopup();
                 }
@@ -405,9 +390,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (gridViewBtn) {
             gridViewBtn.addEventListener('click', () => {
                 currentView = 'grid';
-                gridViewBtn.classList.add('active'); // Add 'active' class
-                listViewBtn.classList.remove('active'); // Remove 'active' class
-                listViewBtn.classList.add('inactive'); // Add 'inactive' class
+                gridViewBtn.classList.add('text-orange-600');
+                listViewBtn.classList.remove('text-orange-600');
+                listViewBtn.classList.add('text-gray-400');
                 // Re-render with current filters (from search input)
                 const searchTerm = searchMenuInput.value.toLowerCase();
                 const filteredProducts = allProducts.filter(product =>
@@ -415,10 +400,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     (product.description && product.description.toLowerCase().includes(searchTerm)) ||
                     (product.category && product.category.name.toLowerCase().includes(searchTerm))
                 );
-                // Filter categories based on filtered products
                 const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-                const categoriesForFilteredProducts = allCategories.filter(cat => filteredCategoryIds.has(cat._id));
-
+                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
                 renderMenuContent(filteredProducts, categoriesForFilteredProducts);
             });
         }
@@ -426,9 +409,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (listViewBtn) {
             listViewBtn.addEventListener('click', () => {
                 currentView = 'list';
-                listViewBtn.classList.add('active'); // Add 'active' class
-                gridViewBtn.classList.remove('active'); // Remove 'active' class
-                gridViewBtn.classList.add('inactive'); // Add 'inactive' class
+                listViewBtn.classList.add('text-orange-600');
+                gridViewBtn.classList.remove('text-orange-600');
+                gridViewBtn.classList.add('text-gray-400');
                 // Re-render with current filters (from search input)
                 const searchTerm = searchMenuInput.value.toLowerCase();
                 const filteredProducts = allProducts.filter(product =>
@@ -436,10 +419,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     (product.description && product.description.toLowerCase().includes(searchTerm)) ||
                     (product.category && product.category.name.toLowerCase().includes(searchTerm))
                 );
-                // Filter categories based on filtered products
                 const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-                const categoriesForFilteredProducts = allCategories.filter(cat => filteredCategoryIds.has(cat._id));
-
+                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
                 renderMenuContent(filteredProducts, categoriesForFilteredProducts);
             });
         }
@@ -447,8 +428,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initial render
         // This initial call will trigger the first rendering based on default 'grid' view
-        renderCategoryTabs(allCategories);
-        renderMenuContent(allProducts, allCategories);
+        renderCategoryTabs(categories);
+        renderMenuContent(allProducts, categories);
 
         // Search functionality
         searchMenuInput.addEventListener('input', (e) => {
@@ -459,9 +440,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 (product.category && product.category.name.toLowerCase().includes(searchTerm))
             );
 
-            // Filter categories based on filtered products
             const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-            const categoriesForFilteredProducts = allCategories.filter(cat => filteredCategoryIds.has(cat._id));
+            const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
 
             renderCategoryTabs(categoriesForFilteredProducts);
             renderMenuContent(filteredProducts, categoriesForFilteredProducts);
@@ -476,7 +456,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         menuTitle.textContent = 'Menu Load Error';
         storeNameElem.textContent = 'Error loading menu details.';
         storeLogoImg.style.display = 'none';
-        // Do NOT open the store info modal on error by default.
-        // If you want to show an error message in the modal, you'd need specific logic here.
     }
 });
