@@ -1,11 +1,8 @@
 /* qr-digital-menu-system/frontend/css/style.css */
 
-/* --- Google Fonts Imports --- */
+/* --- Google Fonts Imports (for Inter only) --- */
 /* For English (or default) professional font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* For Khmer font (Preahvihear) - Switched for better rendering consistency */
-@import url('https://fonts.googleapis.com/css2?family=Preahvihear&display=swap');
 
 /* --- Tailwind CSS Directives --- */
 /* These lines are essential for Tailwind to work */
@@ -97,6 +94,27 @@
 }
 
 /* Apply Preahvihear font as primary for all text. */
+/* IMPORTANT: Using local font files for better consistency on all devices */
+@font-face {
+    font-family: 'Preahvihear';
+    font-style: normal;
+    font-weight: 400; /* Assuming regular weight */
+    font-display: swap;
+    /* Only include the .ttf format since that's what you have */
+    src: url('../fonts/Preahvihear-Regular.ttf') format('truetype');
+}
+
+/* If you have a bold version of Preahvihear, add it here */
+/*
+@font-face {
+    font-family: 'Preahvihear';
+    font-style: normal;
+    font-weight: 700; // Assuming bold weight
+    font-display: swap;
+    src: url('../fonts/Preahvihear-Bold.ttf') format('truetype');
+}
+*/
+
 html {
     font-family: 'Preahvihear', 'Inter', serif, sans-serif !important; /* Prioritize Preahvihear for Khmer, Inter for English */
     /* Font rendering optimization for complex scripts like Khmer */
