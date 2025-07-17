@@ -107,4 +107,7 @@ html {
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "liga", "clig", "kern"; /* Common ligatures, contextual ligatures, kerning */
     font-variant-ligatures: common-ligatures contextual;
+    /* Added for mobile rendering consistency */
+    font-language-override: "KHM "; /* Explicitly set language system for font shaping */
+    direction: ltr; /* Ensure left-to-right direction */
 }
