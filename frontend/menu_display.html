@@ -4,604 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="menuTitle">Loading Menu...</title>
+    <!-- Tailwind CSS CDN - REMOVED, relying on local dist.css -->
+    <!-- Google Fonts Import for Battambang (Khmer) - REMOVED, handled by style.css -->
     <!-- Font Awesome for social media icons and view toggles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Custom CSS (compiled from style.css by Tailwind for global fonts and base styles) -->
+    <!-- Custom CSS (compiled from style.css by Tailwind) -->
     <link rel="stylesheet" href="./css/dist.css"> 
-    <style>
-        /* Base styles for the body */
-        body {
-            background-color: #f3f4f6; /* bg-gray-100 */
-            line-height: 1.5; /* leading-normal */
-            letter-spacing: normal; /* tracking-normal */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            color: #1f2937; /* text-gray-800 */
-        }
-
-        /* Container for main content */
-        .container {
-            width: 100%;
-            margin-left: auto;
-            margin-right: auto;
-            padding-left: 1rem; /* px-4 */
-            padding-right: 1rem; /* px-4 */
-        }
-        @media (min-width: 640px) {
-            .container {
-                max-width: 640px;
-            }
-        }
-        @media (min-width: 768px) {
-            .container {
-                max-width: 768px;
-            }
-        }
-        @media (min-width: 1024px) {
-            .container {
-                max-width: 1024px;
-            }
-        }
-        @media (min-width: 1280px) {
-            .container {
-                max-width: 1280px;
-            }
-        }
-
-        /* Header styles */
-        .main-header {
-            background-color: #ffffff; /* bg-white */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
-            padding-top: 1rem; /* py-4 */
-            padding-bottom: 1rem; /* py-4 */
-            position: sticky;
-            top: 0;
-            z-index: 20;
-        }
-        .store-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem; /* space-x-3 */
-            cursor: pointer;
-        }
-        .store-logo {
-            height: 3rem; /* h-12 */
-            width: 3rem; /* w-12 */
-            object-fit: contain;
-            border-radius: 9999px; /* rounded-full */
-            border: 1px solid #f97316; /* border-orange-500 */
-            padding: 0.25rem; /* p-1 */
-            background-color: #ffffff; /* bg-white */
-        }
-        .store-name {
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* text-gray-800 */
-        }
-        @media (min-width: 640px) {
-            .store-name {
-                font-size: 1.5rem; /* sm:text-2xl */
-            }
-        }
-        .view-toggle-buttons {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem; /* space-x-3 */
-        }
-        .view-toggle-btn {
-            color: #f97316; /* text-orange-600 */
-            outline: none; /* focus:outline-none */
-            transition: color 200ms; /* transition duration-200 */
-        }
-        .view-toggle-btn:hover {
-            color: #c2410c; /* hover:text-orange-800 */
-        }
-        .view-toggle-btn.inactive {
-            color: #9ca3af; /* text-gray-400 */
-        }
-        .view-toggle-btn.inactive:hover {
-            color: #f97316; /* hover:text-orange-600 */
-        }
-        .view-toggle-btn i {
-            font-size: 1.25rem; /* text-xl */
-        }
-
-        /* Search Bar styles */
-        .search-bar-section {
-            background-color: #ffffff; /* bg-white */
-            padding-top: 0.75rem; /* py-3 */
-            padding-bottom: 0.75rem; /* py-3 */
-            padding-left: 1rem; /* px-4 */
-            padding-right: 1rem; /* px-4 */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
-        }
-        .search-input-wrapper {
-            position: relative;
-        }
-        .search-input {
-            width: 100%; /* w-full */
-            padding-left: 2.5rem; /* pl-10 */
-            padding-right: 1rem; /* pr-4 */
-            padding-top: 0.5rem; /* py-2 */
-            padding-bottom: 0.5rem; /* py-2 */
-            border-radius: 0.5rem; /* rounded-lg */
-            border: 1px solid #fbbf24; /* border-orange-400 */
-            outline: none; /* focus:outline-none */
-            color: #374151; /* text-gray-700 */
-            transition: border-color 200ms, box-shadow 200ms;
-        }
-        .search-input:focus {
-            border-color: #f97316; /* focus:border-orange-500 */
-            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.5); /* focus:ring-2 focus:ring-orange-500 */
-        }
-        .search-icon {
-            position: absolute;
-            left: 0.75rem; /* left-3 */
-            top: 50%; /* top-1/2 */
-            transform: translateY(-50%); /* -translate-y-1/2 */
-            width: 1.25rem; /* w-5 */
-            height: 1.25rem; /* h-5 */
-            color: #fbbf24; /* text-orange-400 */
-        }
-
-        /* Category Tabs styles */
-        .category-nav {
-            background-color: #ffffff; /* bg-white */
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
-            position: sticky;
-            top: 72px; /* top-[72px] */
-            z-index: 15;
-            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
-        }
-        .category-list {
-            display: flex;
-            gap: 1rem; /* space-x-4 */
-            padding-top: 0.5rem; /* py-2 */
-            padding-bottom: 0.5rem; /* py-2 */
-            overflow-x: auto;
-            white-space: nowrap;
-            -ms-overflow-style: none; /* IE and Edge */
-            scrollbar-width: none; /* Firefox */
-        }
-        .category-list::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
-        }
-        .category-tab-link {
-            display: block;
-            padding-top: 0.5rem; /* py-2 */
-            padding-bottom: 0.5rem; /* py-2 */
-            padding-left: 1rem; /* px-4 */
-            padding-right: 1rem; /* px-4 */
-            color: #374151; /* text-gray-700 */
-            font-weight: 500; /* font-medium */
-            border-bottom: 2px solid transparent; /* border-b-2 border-transparent */
-            transition: border-color 300ms, color 300ms; /* transition duration-300 */
-        }
-        .category-tab-link:hover {
-            border-color: #f97316; /* hover:border-orange-500 */
-            color: #ea580c; /* hover:text-orange-600 */
-        }
-        .category-tab-link.active {
-            border-color: #ea580c; /* border-orange-600 */
-            color: #ea580c; /* text-orange-600 */
-        }
-
-        /* Main Content styles */
-        main {
-            padding-top: 1.5rem; /* py-6 */
-            padding-bottom: 1.5rem; /* py-6 */
-            flex-grow: 1;
-        }
-        .loading-message, .no-menu-message, .no-search-results-message {
-            text-align: center;
-            color: #6b7280; /* text-gray-500 */
-            font-size: 1.125rem; /* text-lg */
-            margin-top: 3rem; /* mt-12 */
-        }
-        .hidden {
-            display: none;
-        }
-
-        /* Category Section in Menu Content */
-        .category-section {
-            margin-bottom: 2rem; /* mb-8 */
-        }
-        .category-section-title {
-            font-size: 1.5rem; /* text-2xl */
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* text-gray-800 */
-            margin-bottom: 1rem; /* mb-4 */
-            padding-bottom: 0.5rem; /* pb-2 */
-            border-bottom: 1px solid #f97316; /* border-b border-orange-500 */
-            position: sticky;
-            top: 104px; /* Adjust based on header + search + nav height */
-            background-color: #f3f4f6; /* bg-gray-100 */
-            z-index: 10;
-            padding-top: 0.5rem; /* py-2 */
-        }
-        .no-items-message {
-            color: #6b7280; /* text-gray-500 */
-            text-align: center;
-            grid-column: 1 / -1; /* col-span-full */
-        }
-
-        /* Product Grid View */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr)); /* grid-cols-2 */
-            gap: 1rem; /* gap-4 */
-        }
-        @media (min-width: 640px) {
-            .product-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr)); /* sm:grid-cols-2 */
-            }
-        }
-        @media (min-width: 768px) {
-            .product-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr)); /* md:grid-cols-3 */
-            }
-        }
-        @media (min-width: 1024px) {
-            .product-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr)); /* lg:grid-cols-4 */
-            }
-        }
-
-        .product-card {
-            background-color: #ffffff; /* bg-white */
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-md */
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-        .product-card-content {
-            padding: 0.75rem; /* p-3 */
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .product-card-title {
-            font-size: 1rem; /* text-base */
-            font-weight: 600; /* font-semibold */
-            color: #1f2937; /* text-gray-800 */
-            margin-bottom: 0.25rem; /* mb-1 */
-        }
-        .product-card-description {
-            color: #4b5563; /* text-gray-600 */
-            font-size: 0.75rem; /* text-xs */
-            margin-bottom: 0.5rem; /* mb-2 */
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2; /* line-clamp-2 */
-        }
-        .product-card-price {
-            color: #ea580c; /* text-orange-600 */
-            font-weight: 700; /* font-bold */
-            font-size: 1rem; /* text-md */
-        }
-
-        /* Product List View */
-        .product-list {
-            border-top: 1px solid #e5e7eb; /* divide-y divide-gray-200 */
-        }
-        .product-list-item {
-            display: flex;
-            align-items: center;
-            padding-top: 0.75rem; /* py-3 */
-            padding-bottom: 0.75rem; /* py-3 */
-            border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
-            cursor: pointer;
-        }
-        .product-list-item:last-child {
-            border-bottom: none;
-        }
-        .list-image-container {
-            position: relative;
-            width: 60px; /* Adjust size for list view */
-            height: 60px;
-            flex-shrink: 0;
-            overflow: hidden;
-            border-radius: 0.5rem; /* rounded-lg */
-            margin-right: 1rem; /* mr-4 */
-            border: 1px solid #e5e7eb; /* Subtle border for list view image */
-        }
-        .list-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .list-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .list-content h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 0.25rem;
-        }
-        .list-content p {
-            font-size: 0.75rem;
-            color: #6b7280;
-            line-height: 1.3;
-        }
-        .list-price {
-            flex-shrink: 0;
-            margin-left: 1rem;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #ea580c;
-        }
-
-        /* Footer styles */
-        footer {
-            background-color: #ea580c; /* bg-orange-600 */
-            color: #ffffff; /* text-white */
-            padding-top: 1rem; /* py-4 */
-            padding-bottom: 1rem; /* py-4 */
-            margin-top: auto;
-        }
-        footer .container {
-            text-align: center;
-            font-size: 0.875rem; /* text-sm */
-        }
-
-        /* Modal specific adjustments for better responsiveness and appearance */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.7); /* bg-black bg-opacity-70 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            z-index: 50;
-            backdrop-filter: blur(4px);
-        }
-        .modal-content-wrapper {
-            background-color: white;
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-xl */
-            width: 100%;
-            max-width: 28rem; /* max-w-md */
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            padding: 1rem; /* p-4 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        @media (min-width: 768px) {
-            #imagePopupModal .modal-content-wrapper {
-                max-width: 32rem; /* md:max-w-lg */
-            }
-        }
-        @media (min-width: 1024px) {
-            #imagePopupModal .modal-content-wrapper {
-                max-width: 36rem; /* lg:max-w-xl */
-            }
-        }
-
-        .modal-close-btn {
-            position: absolute;
-            top: 0.75rem; /* top-3 */
-            right: 0.75rem; /* right-3 */
-            color: #ffffff; /* text-white */
-            background-color: #374151; /* bg-gray-800 */
-            border-radius: 9999px; /* rounded-full */
-            padding: 0.5rem; /* p-2 */
-            transition: background-color 200ms; /* transition duration-200 */
-            outline: none; /* focus:outline-none */
-            cursor: pointer; /* Add cursor pointer for better UX */
-            z-index: 60; /* Ensure button is above other modal content */
-        }
-        .modal-close-btn:hover {
-            background-color: #4b5563; /* hover:bg-gray-700 */
-        }
-        .modal-close-btn:focus {
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); /* focus:ring-2 focus:ring-white */
-        }
-        .modal-close-btn svg {
-            width: 1.5rem; /* w-6 */
-            height: 1.5rem; /* h-6 */
-        }
-
-        #imagePopupModal .modal-image {
-            display: block;
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            margin-bottom: 1rem; /* mb-4 */
-        }
-        #imagePopupModal .product-info-container {
-            text-align: left;
-            width: 100%;
-            padding-left: 1rem; /* px-4 */
-            padding-right: 1rem; /* px-4 */
-        }
-        #imagePopupModal .product-info-container h3 {
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* text-gray-800 */
-            margin-bottom: 0.5rem; /* mb-2 */
-        }
-        #imagePopupModal .product-info-container p {
-            font-size: 0.875rem; /* text-sm */
-            color: #4b5563; /* text-gray-600 */
-        }
-
-        #storeInfoModal .modal-content-wrapper {
-            max-width: 28rem; /* max-w-md */
-            padding: 1.5rem; /* p-6 */
-            text-align: center;
-        }
-        #storeInfoModal .modal-logo {
-            height: 6rem; /* h-24 */
-            width: 6rem; /* w-24 */
-            object-fit: contain;
-            border-radius: 9999px; /* rounded-full */
-            border: 1px solid #f97316; /* border-orange-500 */
-            padding: 0.25rem; /* p-1 */
-            margin-left: auto; /* mx-auto */
-            margin-right: auto; /* mx-auto */
-            margin-bottom: 1rem; /* mb-4 */
-        }
-        #storeInfoModal .modal-store-name {
-            font-size: 1.5rem; /* text-2xl */
-            font-weight: 700; /* font-bold */
-            color: #1f2937; /* text-gray-800 */
-            margin-bottom: 0.5rem; /* mb-2 */
-        }
-        #storeInfoModal .modal-store-description {
-            color: #4b5563; /* text-gray-600 */
-            font-size: 0.875rem; /* text-sm */
-            margin-bottom: 1rem; /* mb-4 */
-        }
-        #storeInfoModal .contact-info-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem; /* space-y-3 */
-            margin-bottom: 1rem; /* mb-4 */
-        }
-        #storeInfoModal .contact-info-item {
-            color: #374151; /* text-gray-700 */
-            font-size: 1.125rem; /* text-lg */
-            font-weight: 600; /* font-semibold */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #storeInfoModal .contact-info-item i {
-            margin-right: 0.5rem; /* mr-2 */
-            color: #f97316; /* text-orange-500 */
-        }
-        #storeInfoModal .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem; /* space-x-6 */
-            font-size: 1.5rem; /* text-2xl */
-            color: #374151; /* text-gray-700 */
-        }
-        #storeInfoModal .social-link {
-            transition: color 200ms; /* transition duration-200 */
-        }
-        #storeInfoModal .social-link:hover {
-            color: #ea580c; /* hover:text-orange-600 */
-        }
-    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col min-h-screen text-gray-800">
     <!-- Sticky Header for Store Info -->
-    <header class="main-header">
-        <div class="container flex items-center justify-between">
-            <div id="storeHeaderInfo" class="store-info">
-                <img id="storeLogo" src="" alt="Store Logo" class="store-logo" style="display: none;">
-                <h1 id="storeName" class="store-name"></h1>
+    <header class="bg-white shadow-md py-4 sticky top-0 z-20">
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <div id="storeHeaderInfo" class="flex items-center space-x-3 cursor-pointer">
+                <img id="storeLogo" src="" alt="Store Logo" class="h-12 w-12 object-contain rounded-full border border-orange-500 p-1 bg-white" style="display: none;">
+                <h1 id="storeName" class="text-xl font-bold text-gray-800 sm:text-2xl"></h1>
             </div>
             <!-- View Toggle Icons -->
-            <div class="view-toggle-buttons">
-                <button id="gridViewBtn" class="view-toggle-btn">
-                    <i class="fas fa-th-large"></i> <!-- Grid icon -->
+            <div class="flex items-center space-x-3">
+                <button id="gridViewBtn" class="text-orange-600 focus:outline-none transition duration-200 hover:text-orange-800">
+                    <i class="fas fa-th-large text-xl"></i> <!-- Grid icon -->
                 </button>
-                <button id="listViewBtn" class="view-toggle-btn inactive">
-                    <i class="fas fa-list"></i> <!-- List icon -->
+                <button id="listViewBtn" class="text-gray-400 focus:outline-none transition duration-200 hover:text-orange-600">
+                    <i class="fas fa-list text-xl"></i> <!-- List icon -->
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Search Bar -->
-    <div class="search-bar-section">
-        <div class="container">
-            <div class="search-input-wrapper">
-                <input type="text" id="searchMenuInput" placeholder="Search menus..." class="search-input">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+    <div class="bg-white py-3 px-4 shadow-sm border-b border-gray-200">
+        <div class="container mx-auto">
+            <div class="relative">
+                <input type="text" id="searchMenuInput" placeholder="Search menus..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-700 transition">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </div>
         </div>
     </div>
 
     <!-- Sticky Category Tabs -->
-    <nav class="category-nav">
-        <div class="container overflow-x-auto whitespace-nowrap scrollbar-hide">
-            <ul id="categoryTabs" class="category-list">
+    <nav class="bg-white shadow-sm sticky top-[72px] z-15 border-b border-gray-200">
+        <div class="container mx-auto overflow-x-auto whitespace-nowrap scrollbar-hide">
+            <ul id="categoryTabs" class="flex space-x-4 py-2">
                 <!-- Category tabs will be loaded here by JavaScript -->
             </ul>
         </div>
     </nav>
 
-    <main class="container py-6 flex-grow">
+    <main class="container mx-auto py-6 flex-grow">
         <div id="menuContent">
             <!-- Menu items will be loaded here by JavaScript, grouped by category -->
-            <p id="loadingMessage" class="loading-message">Loading menu...</p>
-            <p id="noMenuMessage" class="no-menu-message hidden">No menu items found for this store.</p>
-            <p id="noSearchResultsMessage" class="no-search-results-message hidden">No matching items found.</p>
+            <p id="loadingMessage" class="text-center text-lg text-gray-500 mt-12">Loading menu...</p>
+            <p id="noMenuMessage" class="text-center text-lg text-gray-500 mt-12 hidden">No menu items found for this store.</p>
+            <p id="noSearchResultsMessage" class="text-center text-lg text-gray-500 mt-12 hidden">No matching items found.</p>
         </div>
     </main>
 
     <footer>
-        <div class="container">
+        <div class="container mx-auto px-4 text-center text-sm">
             &copy; 2025 QR Digital Menu. All rights reserved.
         </div>
     </footer>
 
     <!-- Image Popup Modal Structure -->
-    <div id="imagePopupModal" class="modal-overlay hidden" style="display: none;">
-        <div class="modal-content-wrapper">
-            <button id="closeImagePopupBtn" class="modal-close-btn">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="imagePopupModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-filter blur" style="display: none;">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md md:max-w-lg lg:max-w-xl max-h-[90vh] overflow-y-auto relative p-4 flex flex-col items-center">
+            <button id="closeImagePopupBtn" class="absolute top-3 right-3 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <img id="popupImage" src="" alt="Popup Image" class="modal-image">
-            <div class="product-info-container">
-                <h3 id="popupProductName"></h3>
-                <p id="popupProductDescription"></p>
+            <img id="popupImage" src="" alt="Popup Image" class="block w-full h-auto object-contain mb-4">
+            <div class="text-left w-full px-4">
+                <h3 id="popupProductName" class="text-xl font-bold text-gray-800 mb-2"></h3>
+                <p id="popupProductDescription" class="text-sm text-gray-600"></p>
             </div>
         </div>
     </div>
 
     <!-- Store Info Popup Modal Structure -->
-    <div id="storeInfoModal" class="modal-overlay hidden" style="display: none;">
-        <div class="modal-content-wrapper">
-            <button id="closeStoreInfoBtn" class="modal-close-btn">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="storeInfoModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-filter blur" style="display: none;">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative text-center">
+            <button id="closeStoreInfoBtn" class="absolute top-3 right-3 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-white z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <div class="modal-content-inner">
-                <img id="modalStoreLogo" src="" alt="Store Logo" class="modal-logo" style="display: none;">
-                <h2 id="modalStoreName" class="modal-store-name"></h2>
-                <p id="modalStoreDescription" class="modal-store-description"></p>
+                <img id="modalStoreLogo" src="" alt="Store Logo" class="h-24 w-24 object-contain rounded-full border border-orange-500 p-1 mx-auto mb-4" style="display: none;">
+                <h2 id="modalStoreName" class="text-2xl font-bold text-gray-800 mb-2"></h2>
+                <p id="modalStoreDescription" class="text-gray-600 text-sm mb-4"></p>
 
-                <div class="contact-info-group">
-                    <p id="modalStorePhone" class="contact-info-item">
-                        <i class="fas fa-phone-alt"></i>
+                <div class="flex flex-col space-y-3 mb-4">
+                    <p id="modalStorePhone" class="text-gray-700 text-lg font-semibold flex items-center justify-center">
+                        <i class="fas fa-phone-alt mr-2 text-orange-500"></i>
                         <span></span>
                     </p>
-                    <p id="modalStoreAddress" class="contact-info-item">
-                        <i class="fas fa-map-marker-alt"></i>
+                    <p id="modalStoreAddress" class="text-gray-700 text-lg font-semibold flex items-center justify-center">
+                        <i class="fas fa-map-marker-alt mr-2 text-orange-500"></i>
                         <span></span>
                     </p>
                 </div>
 
-                <div class="social-links">
+                <div class="flex justify-center space-x-6 text-2xl text-gray-700">
                     <!-- Social media links - these would be populated by JS if data is available -->
-                    <a href="#" target="_blank" class="social-link hidden" id="socialFacebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" target="_blank" class="social-link hidden" id="socialTelegram"><i class="fab fa-telegram"></i></a>
-                    <a href="#" target="_blank" class="social-link hidden" id="socialTikTok"><i class="fab fa-tiktok"></i></a>
-                    <a href="#" target="_blank" class="social-link hidden" id="socialWebsite"><i class="fas fa-globe"></i></a>
+                    <a href="#" target="_blank" class="hover:text-orange-600 transition duration-200 hidden" id="socialFacebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" target="_blank" class="hover:text-orange-600 transition duration-200 hidden" id="socialTelegram"><i class="fab fa-telegram"></i></a>
+                    <a href="#" target="_blank" class="hover:text-orange-600 transition duration-200 hidden" id="socialTikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" target="_blank" class="hover:text-orange-600 transition duration-200 hidden" id="socialWebsite"><i class="fas fa-globe"></i></a>
                 </div>
             </div>
         </div>
     </div>
+
 
     <script src="./js/api.js"></script>
     <script src="./js/menu_display.js"></script>
