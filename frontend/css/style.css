@@ -4,8 +4,8 @@
 /* For English (or default) professional font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* For Khmer font (Noto Sans Khmer) - Switched for better rendering consistency */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;700&display=swap');
+/* For Khmer font (Preahvihear) - Switched for better rendering consistency */
+@import url('https://fonts.googleapis.com/css2?family=Preahvihear&display=swap');
 
 /* --- Tailwind CSS Directives --- */
 /* These lines are essential for Tailwind to work */
@@ -96,11 +96,9 @@
     color: #ea580c;
 }
 
-/* Apply Noto Sans Khmer font as primary for all text. */
-/* This rule is now placed at the very end and targets the root html element,
-   which should give it the highest possible priority. */
+/* Apply Preahvihear font as primary for all text. */
 html {
-    font-family: 'Noto Sans Khmer', 'Inter', serif, sans-serif !important; /* Prioritize Noto Sans Khmer for Khmer, Inter for English */
+    font-family: 'Preahvihear', 'Inter', serif, sans-serif !important; /* Prioritize Preahvihear for Khmer, Inter for English */
     /* Font rendering optimization for complex scripts like Khmer */
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
