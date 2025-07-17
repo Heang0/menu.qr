@@ -101,6 +101,10 @@
    which should give it the highest possible priority. */
 html {
     font-family: 'Noto Sans Khmer', 'Inter', serif, sans-serif !important; /* Prioritize Noto Sans Khmer for Khmer, Inter for English */
+    /* Font rendering optimization for complex scripts like Khmer */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "liga", "clig", "kern"; /* Common ligatures, contextual ligatures, kerning */
+    font-variant-ligatures: common-ligatures contextual;
 }
-
-/* Removed explicit @font-face rules as Google Fonts link handles it */
