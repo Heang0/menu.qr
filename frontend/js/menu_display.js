@@ -1,8 +1,7 @@
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const publicUrlId = urlParams.get('publicUrlId'); // Changed from storeId
+const publicSlug = urlParams.get('slug');
 
     const menuTitle = document.getElementById('menuTitle');
     const storeHeaderInfo = document.getElementById('storeHeaderInfo');
@@ -54,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Fetch store details using publicUrlId
-        currentStoreData = await apiRequest(`/stores/public/${publicUrlId}`, 'GET', null, false);
+       currentStoreData = await apiRequest(`/stores/public/slug/${publicSlug}`, 'GET', null, false);
         menuTitle.textContent = `${currentStoreData.name}'s Menu`;
         storeNameElem.textContent = currentStoreData.name;
 
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch categories and products using the actual MongoDB _id from currentStoreData
         // The backend routes for categories and products still expect the MongoDB _id
         allCategories = await apiRequest(`/categories/store/${currentStoreData._id}`, 'GET', null, false);
-        allProducts = await apiRequest(`/products/public-store/${publicUrlId}`, 'GET', null, false); // Use publicUrlId for products API
+      allProducts = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false); // Use publicUrlId for products API
 
         loadingMessage.classList.add('hidden');
 
