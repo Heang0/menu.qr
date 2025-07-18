@@ -54,18 +54,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productNameInput = document.getElementById('productName');
     const productCategorySelect = document.getElementById('productCategory');
     const productDescriptionInput = document.getElementById('productDescription');
-    const productPriceInput = document.getElementById('productPrice');
+    const productPriceInput = document.getElementById('productPrice'); // Changed to text input
     const productImageInput = document.getElementById('productImage');
     const productMessage = document.getElementById('productMessage');
     const productListTableBody = document.getElementById('productListTableBody');
-    const productFilterCategorySelect = document.getElementById('productFilterCategory'); // New: Category filter dropdown
+    const productFilterCategorySelect = document.getElementById('productFilterCategory'); // Category filter dropdown
     const editProductModal = document.getElementById('editProductModal');
     const editProductForm = document.getElementById('editProductForm');
     const editProductIdInput = document.getElementById('editProductId');
     const editProductNameInput = document.getElementById('editProductName');
     const editProductCategorySelect = document.getElementById('editProductCategory');
     const editProductDescriptionInput = document.getElementById('editProductDescription');
-    const editProductPriceInput = document.getElementById('editProductPrice');
+    const editProductPriceInput = document.getElementById('editProductPrice'); // Changed to text input
     const editProductImageInput = document.getElementById('editProductImage');
     const currentProductImageImg = document.getElementById('currentProductImage');
     const editProductMessage = document.getElementById('editProductMessage');
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayMessage(categoryMessage, 'Category added successfully!', false);
                 categoryNameInput.value = ''; // Clear input
                 fetchCategories(); // Refresh list
-                fetchProducts(); // Refresh products to update category dropdowns
+                fetchProducts(productFilterCategorySelect.value); // Refresh products to update category dropdowns
                 updateDashboardOverview(); // Update overview counts
             } catch (error) {
                 displayMessage(categoryMessage, `Error adding category: ${error.message}`, true);
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayMessage(editCategoryMessage, 'Category updated successfully!', false);
                 editCategoryModal.classList.add('hidden');
                 fetchCategories(); // Refresh list
-                fetchProducts(); // Refresh products to update category dropdowns
+                fetchProducts(productFilterCategorySelect.value); // Refresh products to update category dropdowns
             } catch (error) {
                 displayMessage(editCategoryMessage, `Error updating category: ${error.message}`, true);
             }
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await apiRequest(`/categories/${id}`, 'DELETE');
             displayMessage(categoryMessage, 'Category deleted successfully!', false);
             fetchCategories(); // Refresh list
-            fetchProducts(); // Refresh products
+            fetchProducts(productFilterCategorySelect.value); // Refresh products
             updateDashboardOverview(); // Update overview counts
         } catch (error) {
             displayMessage(categoryMessage, `Error deleting category: ${error.message}`, true);
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                     <td class="py-2 px-4 border-b border-gray-200">${product.title}</td>
                     <td class="py-2 px-4 border-b border-gray-200">${product.category ? product.category.name : 'Uncategorized'}</td>
-                    <td class="py-2 px-4 border-b border-gray-200">$${product.price !== undefined && product.price !== null ? product.price.toFixed(2) : 'N/A'}</td>
+                    <td class="py-2 px-4 border-b border-gray-200">${product.price !== undefined && product.price !== null ? product.price : 'N/A'}</td>
                     <td class="py-2 px-4 border-b border-gray-200">
                         <button data-id="${product._id}" class="edit-product-btn bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-1 px-2 rounded mr-2 transition duration-300">Edit</button>
                         <button data-id="${product._id}" class="delete-product-btn bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded transition duration-300">Delete</button>
@@ -462,7 +462,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('title', productNameInput.value);
             formData.append('category', productCategorySelect.value);
             formData.append('description', productDescriptionInput.value);
-            formData.append('price', productPriceInput.value);
+            formData.append('price', productPriceInput.value); // Send as string
 
             if (productImageInput.files[0]) {
                 formData.append('image', productImageInput.files[0]);
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editProductNameInput.value = product.title;
         editProductCategorySelect.value = product.category ? product.category._id : '';
         editProductDescriptionInput.value = product.description || '';
-        editProductPriceInput.value = product.price !== undefined && product.price !== null ? product.price : '';
+        editProductPriceInput.value = product.price !== undefined && product.price !== null ? product.price : ''; // Display as string
 
         if (product.image) {
             currentProductImageImg.src = product.image;
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('title', editProductNameInput.value);
             formData.append('category', editProductCategorySelect.value);
             formData.append('description', editProductDescriptionInput.value);
-            formData.append('price', editProductPriceInput.value);
+            formData.append('price', editProductPriceInput.value); // Send as string
             
             if (editProductImageInput.files[0]) {
                 formData.append('image', editProductImageInput.files[0]);
