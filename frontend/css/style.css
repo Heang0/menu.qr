@@ -105,5 +105,36 @@ html {
     font-variant-ligatures: normal;
     font-language-override: normal;
     direction: ltr;
-    font-weight: bold; /* Changed to semibold */
+    /* Removed font-weight from html to apply more specifically */
+}
+
+/* Explicitly apply font-weight to common text elements */
+body, h1, h2, h3, h4, h5, h6, p, a, span, div, input, select, textarea, button {
+    font-weight: 600; /* Apply semibold to all common text elements */
+}
+
+/* Override for specific elements if needed, e.g., for descriptions */
+.product-card-description,
+.list-content p,
+#modalStoreDescription,
+#loginMessage,
+#createAdminMessage,
+#editAdminMessage,
+#storeMessage,
+#categoryMessage,
+#editCategoryMessage,
+#productMessage,
+#editProductMessage,
+#noMenuMessage,
+#noSearchResultsMessage,
+#loadingMessage {
+    font-weight: 400; /* Regular weight for descriptions and messages */
+}
+
+/* Ensure font-weight for specific bold elements remains strong */
+.font-bold {
+    font-weight: 700 !important; /* Ensure Tailwind's font-bold is respected */
+}
+.font-semibold {
+    font-weight: 600 !important; /* Ensure Tailwind's font-semibold is respected */
 }
