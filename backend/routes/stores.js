@@ -6,6 +6,7 @@ const Store = require('../models/Store');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer'); // For handling file uploads
+const slugify = require('slugify'); // Import slugify
 
 // Set up Multer for memory storage
 const storage = multer.memoryStorage();
@@ -60,6 +61,7 @@ router.put('/my-store', protect, authorizeRoles('admin'), upload.single('logo'),
         store.tiktokUrl = tiktokUrl !== undefined ? tiktokUrl : store.tiktokUrl;
         store.websiteUrl = websiteUrl !== undefined ? websiteUrl : store.websiteUrl;
 
+        // The pre-save hook in the Store model will handle updating the slug if 'name' is modified.
 
         // Handle logo upload or removal
         if (req.file) {
@@ -99,13 +101,13 @@ router.put('/my-store', protect, authorizeRoles('admin'), upload.single('logo'),
     }
 });
 
-// @desc    Get store details by Public URL ID (for customer facing menu)
-// @route   GET /api/stores/public/:publicUrlId  <--- CHANGED ROUTE
+// @desc    Get store details by Slug (for customer facing menu)
+// @route   GET /api/stores/public/slug/:slug  <--- CHANGED ROUTE
 // @access  Public
-router.get('/public/:publicUrlId', async (req, res) => {
+router.get('/public/slug/:slug', async (req, res) => {
     try {
-        // Find store by publicUrlId instead of MongoDB _id
-        const store = await Store.findOne({ publicUrlId: req.params.publicUrlId });
+        // Find store by slug instead of publicUrlId
+        const store = await Store.findOne({ slug: req.params.slug });
 
         if (!store) {
             return res.status(404).json({ message: 'Store not found.' });
@@ -122,11 +124,11 @@ router.get('/public/:publicUrlId', async (req, res) => {
             telegramUrl: store.telegramUrl,
             tiktokUrl: store.tiktokUrl,
             websiteUrl: store.websiteUrl,
-            publicUrlId: store.publicUrlId
+            publicUrlId: store.publicUrlId, // Still return this, though not used for public URL
+            slug: store.slug // Include the slug
         });
     } catch (error) {
-        console.error('Error fetching public store:', error);
-        // CastError is less likely now, but handle generic error
+        console.error('Error fetching public store by slug:', error);
         res.status(500).json({ message: error.message });
     }
 });

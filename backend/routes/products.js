@@ -96,13 +96,13 @@ router.get('/my-store', protect, authorizeRoles('admin'), getAdminStoreId, async
     }
 });
 
-// @desc    Get all products for a public store (by publicUrlId)
-// @route   GET /api/products/public-store/:publicUrlId  <--- CHANGED ROUTE
+// @desc    Get all products for a public store (by slug)
+// @route   GET /api/products/public-store/slug/:slug  <--- CHANGED ROUTE
 // @access  Public
-router.get('/public-store/:publicUrlId', async (req, res) => {
+router.get('/public-store/slug/:slug', async (req, res) => {
     try {
-        // Find the store using publicUrlId to get its MongoDB _id
-        const store = await Store.findOne({ publicUrlId: req.params.publicUrlId });
+        // Find the store using slug to get its MongoDB _id
+        const store = await Store.findOne({ slug: req.params.slug });
         if (!store) {
             return res.status(404).json({ message: 'Store not found.' });
         }
@@ -111,7 +111,7 @@ router.get('/public-store/:publicUrlId', async (req, res) => {
         const products = await Product.find({ store: store._id }).populate('category', 'name').sort('title');
         res.json(products);
     } catch (error) {
-        console.error('Error fetching public store products:', error);
+        console.error('Error fetching public store products by slug:', error);
         res.status(500).json({ message: error.message });
     }
 });

@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- DOM Element References ---
     // Mobile Menu
-    const mobileMenuButton = document.getElementById('mobileMenuButton'); // New
-    const sidebar = document.getElementById('sidebar');                   // New
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const sidebar = document.getElementById('sidebar');
 
     // Dashboard Overview
     const totalProductsCount = document.getElementById('totalProductsCount');
@@ -56,10 +56,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productDescriptionInput = document.getElementById('productDescription');
     const productPriceInput = document.getElementById('productPrice');
     const productImageInput = document.getElementById('productImage');
-    const newProductImagePreview = document.getElementById('newProductImagePreview'); // New: Image preview element
+    const newProductImagePreview = document.getElementById('newProductImagePreview');
     const productMessage = document.getElementById('productMessage');
     const productListTableBody = document.getElementById('productListTableBody');
-    const productFilterCategorySelect = document.getElementById('productFilterCategory'); // Category filter dropdown
+    const productFilterCategorySelect = document.getElementById('productFilterCategory');
     const editProductModal = document.getElementById('editProductModal');
     const editProductForm = document.getElementById('editProductForm');
     const editProductIdInput = document.getElementById('editProductId');
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeProductImagePopupBtn = document.getElementById('closeProductImagePopupBtn');
 
 
-    let currentStore = null; // To store the admin's store data
+    let currentStore = null;
 
     // --- Utility Functions ---
     function displayMessage(element, message, isError = false) {
@@ -99,10 +99,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         mobileMenuButton.addEventListener('click', () => {
             sidebar.classList.toggle('hidden');
         });
-        // Close sidebar when a navigation link is clicked (for mobile)
         sidebar.querySelectorAll('nav a').forEach(link => {
             link.addEventListener('click', () => {
-                if (window.innerWidth < 1024) { // Only close on small screens
+                if (window.innerWidth < 1024) {
                     sidebar.classList.add('hidden');
                 }
             });
@@ -129,7 +128,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchStoreDetails() {
         clearMessage(storeMessage);
-        clearMessage(copyMessage); // Clear copy message on refresh
+        clearMessage(copyMessage);
         try {
             currentStore = await apiRequest('/stores/my-store', 'GET');
             storeNameInput.value = currentStore.name;
@@ -145,18 +144,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (currentStore.logo) {
                 currentLogoImg.src = currentStore.logo;
                 currentLogoImg.style.display = 'block';
-                removeLogoContainer.style.display = 'block'; // Show remove logo option
-                removeStoreLogoCheckbox.checked = false; // Ensure it's unchecked on load
+                removeLogoContainer.style.display = 'block';
+                removeStoreLogoCheckbox.checked = false;
             } else {
                 currentLogoImg.src = '';
                 currentLogoImg.style.display = 'none';
-                removeLogoContainer.style.display = 'none'; // Hide remove logo option if no logo
+                removeLogoContainer.style.display = 'none';
                 removeStoreLogoCheckbox.checked = false;
             }
 
-            // Generate QR code and display public link on load if store exists
-            if (currentStore.publicUrlId) { // Use publicUrlId
-                const publicMenuUrl = `${window.location.origin}/menu_display.html?publicUrlId=${currentStore.publicUrlId}`; // Use publicUrlId
+            // Generate QR code and display public link using the slug
+            // THIS IS THE LINE THAT GENERATES THE URL IN ADMIN PANEL
+            if (currentStore.slug) { 
+                const publicMenuUrl = `${window.location.origin}/menu_display.html?slug=${currentStore.slug}`; 
                 const qrCanvas = window.generateQRCode(publicMenuUrl, qrCodeContainer, 256);
                 if (qrCanvas) {
                     downloadQrBtn.style.display = 'inline-block';
@@ -170,10 +170,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 copyMenuLinkBtn.style.display = 'inline-block';
 
             } else {
-                 qrCodeContainer.innerHTML = '<p class="text-gray-500">Save store info to generate QR.</p>';
-                 downloadQrBtn.style.display = 'none';
-                 publicMenuLinkInput.value = 'Link will appear here after saving store info.';
-                 copyMenuLinkBtn.style.display = 'none';
+                qrCodeContainer.innerHTML = '<p class="text-gray-500">Save store info to generate QR.</p>';
+                downloadQrBtn.style.display = 'none';
+                publicMenuLinkInput.value = 'Link will appear here after saving store info.';
+                copyMenuLinkBtn.style.display = 'none';
             }
 
         }
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const updatedStore = await apiRequest('/stores/my-store', 'PUT', formData, true, true);
                 displayMessage(storeMessage, 'Store details updated successfully!', false);
-                await fetchStoreDetails(); // Re-fetch to update QR and logo display
+                await fetchStoreDetails();
             } catch (error) {
                 displayMessage(storeMessage, `Error updating store: ${error.message}`, true);
             }
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 console.error('Failed to copy text: ', err);
                 displayMessage(copyMessage, 'Failed to copy link. Please copy manually.', true);
             }
-            setTimeout(() => clearMessage(copyMessage), 3000); // Clear message after 3 seconds
+            setTimeout(() => clearMessage(copyMessage), 3000);
         });
     }
 
@@ -244,9 +244,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const categories = await apiRequest('/categories/my-store', 'GET');
             categoryListTableBody.innerHTML = '';
-            productCategorySelect.innerHTML = '<option value="">Select a Category</option>'; // For add product form
-            editProductCategorySelect.innerHTML = ''; // For edit product form
-            productFilterCategorySelect.innerHTML = '<option value="all">All Categories</option>'; // For product filter dropdown
+            productCategorySelect.innerHTML = '<option value="">Select a Category</option>';
+            editProductCategorySelect.innerHTML = '';
+            productFilterCategorySelect.innerHTML = '<option value="all">All Categories</option>';
 
             if (categories.length === 0) {
                 categoryListTableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4 text-gray-500">No categories added yet.</td></tr>';
@@ -254,7 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             categories.forEach(category => {
-                // Populate category list table
                 const row = categoryListTableBody.insertRow();
                 row.innerHTML = `
                     <td class="py-2 px-4 border-b border-gray-200">${category.name}</td>
@@ -264,7 +263,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                 `;
 
-                // Populate category dropdowns for products
                 const optionAdd = document.createElement('option');
                 optionAdd.value = category._id;
                 optionAdd.textContent = category.name;
@@ -275,14 +273,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optionEdit.textContent = category.name;
                 editProductCategorySelect.appendChild(optionEdit);
 
-                // Populate category filter dropdown
                 const optionFilter = document.createElement('option');
                 optionFilter.value = category._id;
                 optionFilter.textContent = category.name;
                 productFilterCategorySelect.appendChild(optionFilter);
             });
 
-            // Attach event listeners to new buttons
             document.querySelectorAll('.edit-category-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     openEditCategoryModal(e.target.dataset.id, e.target.dataset.name);
@@ -316,10 +312,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await apiRequest('/categories', 'POST', { name });
                 displayMessage(categoryMessage, 'Category added successfully!', false);
-                categoryNameInput.value = ''; // Clear input
-                fetchCategories(); // Refresh list
-                fetchProducts(productFilterCategorySelect.value); // Refresh products to update category dropdowns
-                updateDashboardOverview(); // Update overview counts
+                categoryNameInput.value = '';
+                fetchCategories();
+                fetchProducts(productFilterCategorySelect.value);
+                updateDashboardOverview();
             } catch (error) {
                 displayMessage(categoryMessage, `Error adding category: ${error.message}`, true);
             }
@@ -354,8 +350,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await apiRequest(`/categories/${id}`, 'PUT', { name });
                 displayMessage(editCategoryMessage, 'Category updated successfully!', false);
                 editCategoryModal.classList.add('hidden');
-                fetchCategories(); // Refresh list
-                fetchProducts(productFilterCategorySelect.value); // Refresh products to update category dropdowns
+                fetchCategories();
+                fetchProducts(productFilterCategorySelect.value);
             } catch (error) {
                 displayMessage(editCategoryMessage, `Error updating category: ${error.message}`, true);
             }
@@ -367,17 +363,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiRequest(`/categories/${id}`, 'DELETE');
             displayMessage(categoryMessage, 'Category deleted successfully!', false);
-            fetchCategories(); // Refresh list
-            fetchProducts(productFilterCategorySelect.value); // Refresh products
-            updateDashboardOverview(); // Update overview counts
+            fetchCategories();
+            fetchProducts(productFilterCategorySelect.value);
+            updateDashboardOverview();
         } catch (error) {
-            displayMessage(categoryMessage, `Error deleting category: ${error.message}`, true);
+                displayMessage(categoryMessage, `Error deleting category: ${error.message}`, true);
         }
     }
 
     // --- Product Management Functions ---
 
-    // Modified fetchProducts to accept an optional categoryId
     async function fetchProducts(categoryId = 'all') {
         clearMessage(productMessage);
         productListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Loading products...</td></tr>';
@@ -386,7 +381,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (categoryId === 'all') {
                 products = await apiRequest('/products/my-store', 'GET');
             } else {
-                // Assuming your backend API supports filtering by category ID
                 products = await apiRequest(`/products/my-store?category=${categoryId}`, 'GET');
             }
             
@@ -399,7 +393,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             products.forEach(product => {
                 const row = productListTableBody.insertRow();
-                const defaultImage = `https://placehold.co/50x50/e2e8f0/64748b?text=No+Img`; // Placeholder for table
+                const defaultImage = `https://placehold.co/50x50/e2e8f0/64748b?text=No+Img`;
 
                 row.innerHTML = `
                     <td class="py-2 px-4 border-b border-gray-200">
@@ -417,10 +411,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             });
 
-            // Attach event listeners for edit/delete buttons
             document.querySelectorAll('.edit-product-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
-                    // Find the product object from the fetched list
                     const productId = e.target.dataset.id;
                     const product = products.find(p => p._id === productId);
                     if (product) {
@@ -438,7 +430,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
 
-            // Attach event listener for image popup
             document.querySelectorAll('.product-list-image-container').forEach(container => {
                 container.addEventListener('click', (e) => {
                     const imageUrl = e.currentTarget.dataset.image;
@@ -474,17 +465,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayMessage(productMessage, 'Product added successfully!', false);
                 productForm.reset();
                 productImageInput.value = '';
-                newProductImagePreview.src = ''; // Clear image preview
-                newProductImagePreview.classList.add('hidden'); // Hide image preview
-                fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
-                updateDashboardOverview(); // Update overview counts
+                newProductImagePreview.src = '';
+                newProductImagePreview.classList.add('hidden');
+                fetchProducts(productFilterCategorySelect.value);
+                updateDashboardOverview();
             } catch (error) {
                 displayMessage(productMessage, `Error adding product: ${error.message}`, true);
             }
         });
     }
 
-    // New: Event listener for product image input to show preview
     if (productImageInput) {
         productImageInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -550,7 +540,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await apiRequest(`/products/${editProductIdInput.value}`, 'PUT', formData, true, true);
                 displayMessage(editProductMessage, 'Product updated successfully!', false);
                 editProductModal.classList.add('hidden');
-                fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
+                fetchProducts(productFilterCategorySelect.value);
             } catch (error) {
                 displayMessage(editProductMessage, `Error updating product: ${error.message}`, true);
             }
@@ -562,8 +552,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiRequest(`/products/${id}`, 'DELETE');
             displayMessage(productMessage, 'Product deleted successfully!', false);
-            fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
-            updateDashboardOverview(); // Update overview counts
+            fetchProducts(productFilterCategorySelect.value);
+            updateDashboardOverview();
         } catch (error) {
             displayMessage(productMessage, `Error deleting product: ${error.message}`, true);
         }
@@ -575,7 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popupProductTitle.textContent = title;
         popupProductDescriptionDetail.textContent = description || 'No description available.';
         productImagePopupModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling background
+        document.body.style.overflow = 'hidden';
     }
 
     function closeProductImagePopup() {
@@ -583,7 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         popupProductImage.src = '';
         popupProductTitle.textContent = '';
         popupProductDescriptionDetail.textContent = '';
-        document.body.style.overflow = ''; // Restore scrolling
+        document.body.style.overflow = '';
     }
 
     if (closeProductImagePopupBtn) {
@@ -601,7 +591,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (productFilterCategorySelect) {
         productFilterCategorySelect.addEventListener('change', (e) => {
             const selectedCategoryId = e.target.value;
-            fetchProducts(selectedCategoryId); // Fetch products based on selected category
+            fetchProducts(selectedCategoryId);
         });
     }
 
@@ -610,7 +600,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     (async () => {
         await fetchStoreDetails();
         await fetchCategories();
-        await fetchProducts('all'); // Fetch all products initially
-        await updateDashboardOverview(); // Call on initial load
-    })(); // Immediately-invoked async function
+        await fetchProducts('all');
+        await updateDashboardOverview();
+    })();
 });
