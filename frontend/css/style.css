@@ -105,5 +105,5 @@ html {
     font-variant-ligatures: normal;
     font-language-override: normal;
     direction: ltr;
-    font-weight: 600; /* Changed to semibold */
+    font-weight: bold; /* Changed to semibold */
 }
