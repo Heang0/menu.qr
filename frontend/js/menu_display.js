@@ -1,7 +1,9 @@
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-const publicSlug = urlParams.get('slug');
+    const urlParams = new URLSearchParams(window.location.search); // Add this line
+    const publicSlug = urlParams.get('slug');
+
 
     const menuTitle = document.getElementById('menuTitle');
     const storeHeaderInfo = document.getElementById('storeHeaderInfo');
