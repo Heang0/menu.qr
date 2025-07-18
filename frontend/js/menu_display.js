@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentStoreData = null;
     let currentView = 'grid'; // Default view
 
-    if (!publicUrlId) { // Changed from storeId
+  if (!publicSlug) { // Now correctly checking for publicSlug
         menuTitle.textContent = 'Menu Not Found';
         storeNameElem.textContent = 'Error: No Store ID provided.';
         loadingMessage.classList.add('hidden');
