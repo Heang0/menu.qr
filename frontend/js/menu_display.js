@@ -1,4 +1,3 @@
-
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -38,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const listViewBtn = document.getElementById('listViewBtn');
 
     let allProducts = [];
+    let allCategories = []; // Store all categories fetched initially
     let currentStoreData = null;
     let currentView = 'grid'; // Default view
 
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             storeLogoImg.style.display = 'none';
         }
 
-        const categories = await apiRequest(`/categories/store/${storeId}`, 'GET', null, false);
+        allCategories = await apiRequest(`/categories/store/${storeId}`, 'GET', null, false);
         allProducts = await apiRequest(`/products/store/${storeId}`, 'GET', null, false);
 
         loadingMessage.classList.add('hidden');
@@ -75,43 +75,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Render Category Tabs
-        function renderCategoryTabs(categoriesToRender) {
+        function renderCategoryTabs(categoriesToRender, activeTabId = 'all-items') {
             categoryTabs.innerHTML = '';
-            if (categoriesToRender.length > 0) {
-                categoriesToRender.forEach((category, index) => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    // FIX: Prepend 'cat-' to category._id to make it a valid CSS selector
-                    a.href = `#cat-${category._id}`;
-                    a.textContent = category.name;
-                    a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
-                    if (index === 0) {
-                        a.classList.add('border-orange-600', 'text-orange-600');
-                    }
-                    a.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        document.querySelectorAll('#categoryTabs a').forEach(tab => {
-                            tab.classList.remove('border-orange-600', 'text-orange-600');
-                        });
-                        a.classList.add('border-orange-600', 'text-orange-600');
-                        // FIX: Use the prepended ID for querySelector
-                        document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
-                    });
-                    li.appendChild(a);
-                    categoryTabs.appendChild(li);
-                });
-            } else {
+
+            // Add "All" tab
+            const allLi = document.createElement('li');
+            const allA = document.createElement('a');
+            allA.href = `#all-items`;
+            allA.textContent = 'All';
+            allA.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
+            allA.addEventListener('click', (e) => {
+                e.preventDefault();
+                setActiveCategoryTab('all-items');
+                renderMenuContent(allProducts, allCategories); // Show all products
+                document.querySelector('#all-items-section').scrollIntoView({ behavior: 'smooth' });
+            });
+            allLi.appendChild(allA);
+            categoryTabs.appendChild(allLi);
+
+            // Add other category tabs
+            categoriesToRender.forEach((category) => {
                 const li = document.createElement('li');
                 const a = document.createElement('a');
-                a.href = `#all-items`;
-                a.textContent = 'All Items';
-                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-orange-600', 'text-orange-600');
+                a.href = `#cat-${category._id}`;
+                a.textContent = category.name;
+                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setActiveCategoryTab(`cat-${category._id}`);
+                    const productsInCategory = allProducts.filter(product => product.category && product.category._id === category._id);
+                    renderMenuContent(productsInCategory, [category]); // Show only products for this category
+                    document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
+                });
                 li.appendChild(a);
                 categoryTabs.appendChild(li);
+            });
+
+            // Set active tab
+            setActiveCategoryTab(activeTabId);
+        }
+
+        // Helper function to set the active category tab
+        function setActiveCategoryTab(tabId) {
+            document.querySelectorAll('#categoryTabs a').forEach(tab => {
+                tab.classList.remove('border-orange-600', 'text-orange-600');
+            });
+            const activeTab = document.querySelector(`#categoryTabs a[href="#${tabId}"]`);
+            if (activeTab) {
+                activeTab.classList.add('border-orange-600', 'text-orange-600');
             }
         }
 
-        // Render Menu Content based on current view
+        // Render Menu Content based on current view and filtered products/categories
         function renderMenuContent(productsToRender, categoriesToRender) {
             menuContent.innerHTML = '';
             noSearchResultsMessage.classList.add('hidden');
@@ -121,10 +136,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (categoriesToRender.length > 0) {
+            // If "All" tab is active or search is active, show all products in one section
+            const isAllOrSearch = categoriesToRender.length === allCategories.length || searchMenuInput.value.trim() !== '';
+
+            if (isAllOrSearch) {
+                const allItemsSection = document.createElement('section');
+                allItemsSection.id = 'all-items-section'; // Unique ID for the 'All' section
+                allItemsSection.classList.add('mb-8');
+
+                const allItemsTitle = document.createElement('h2');
+                allItemsTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
+                allItemsTitle.textContent = searchMenuInput.value.trim() !== '' ? 'Search Results' : 'All Items';
+                allItemsSection.appendChild(allItemsTitle);
+
+                if (currentView === 'grid') {
+                    const productGrid = document.createElement('div');
+                    productGrid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-4');
+                    productsToRender.forEach(product => {
+                        productGrid.appendChild(createProductGridCard(product));
+                    });
+                    allItemsSection.appendChild(productGrid);
+                } else { // List View
+                    const productList = document.createElement('div');
+                    productList.classList.add('divide-y', 'divide-gray-200');
+                    productsToRender.forEach(product => {
+                        productList.appendChild(createProductListItem(product));
+                    });
+                    allItemsSection.appendChild(productList);
+                }
+                menuContent.appendChild(allItemsSection);
+
+            } else {
+                // Render by category if a specific category tab is active and no search term
                 categoriesToRender.forEach(category => {
                     const categorySection = document.createElement('section');
-                    // FIX: Prepend 'cat-' to category._id for the section ID
                     categorySection.id = `cat-${category._id}`;
                     categorySection.classList.add('mb-8');
 
@@ -159,32 +204,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     menuContent.appendChild(categorySection);
                 });
-            } else {
-                const allItemsSection = document.createElement('section');
-                allItemsSection.id = 'all-items';
-                allItemsSection.classList.add('mb-8');
-
-                const allItemsTitle = document.createElement('h2');
-                allItemsTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
-                allItemsTitle.textContent = 'All Items';
-                allItemsSection.appendChild(allItemsTitle);
-
-                if (currentView === 'grid') {
-                    const productGrid = document.createElement('div');
-                    productGrid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-4');
-                    productsToRender.forEach(product => {
-                        productGrid.appendChild(createProductGridCard(product));
-                    });
-                    allItemsSection.appendChild(productGrid);
-                } else { // List View
-                    const productList = document.createElement('div');
-                    productList.classList.add('divide-y', 'divide-gray-200');
-                    productsToRender.forEach(product => {
-                        productList.appendChild(createProductListItem(product));
-                    });
-                    allItemsSection.appendChild(productList);
-                }
-                menuContent.appendChild(allItemsSection);
             }
         }
 
@@ -310,6 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = '';
         }
 
+
         // Store Info popup functions
         function openStoreInfoPopup() {
             if (!currentStoreData) return;
@@ -395,14 +415,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 listViewBtn.classList.add('text-gray-400');
                 // Re-render with current filters (from search input)
                 const searchTerm = searchMenuInput.value.toLowerCase();
-                const filteredProducts = allProducts.filter(product =>
-                    product.title.toLowerCase().includes(searchTerm) ||
-                    (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-                    (product.category && product.category.name.toLowerCase().includes(searchTerm))
-                );
-                const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
-                renderMenuContent(filteredProducts, categoriesForFilteredProducts);
+                if (searchTerm) {
+                    const filteredProducts = allProducts.filter(product =>
+                        product.title.toLowerCase().includes(searchTerm) ||
+                        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                        (product.category && product.category.name.toLowerCase().includes(searchTerm))
+                    );
+                    renderMenuContent(filteredProducts, allCategories); // Search results always show all
+                } else {
+                    // If no search term, render based on currently active category tab (which could be 'All')
+                    const activeTabHref = document.querySelector('#categoryTabs a.text-orange-600')?.getAttribute('href');
+                    if (activeTabHref === '#all-items') {
+                        renderMenuContent(allProducts, allCategories);
+                    } else if (activeTabHref) {
+                        const categoryId = activeTabHref.replace('#cat-', '');
+                        const category = allCategories.find(cat => cat._id === categoryId);
+                        const productsInCategory = allProducts.filter(product => product.category && product.category._id === categoryId);
+                        renderMenuContent(productsInCategory, category ? [category] : []);
+                    } else {
+                        renderMenuContent(allProducts, allCategories); // Fallback to all if no active tab
+                    }
+                }
             });
         }
 
@@ -414,22 +447,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 gridViewBtn.classList.add('text-gray-400');
                 // Re-render with current filters (from search input)
                 const searchTerm = searchMenuInput.value.toLowerCase();
-                const filteredProducts = allProducts.filter(product =>
-                    product.title.toLowerCase().includes(searchTerm) ||
-                    (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-                    (product.category && product.category.name.toLowerCase().includes(searchTerm))
-                );
-                const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-                const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
-                renderMenuContent(filteredProducts, categoriesForFilteredProducts);
+                if (searchTerm) {
+                    const filteredProducts = allProducts.filter(product =>
+                        product.title.toLowerCase().includes(searchTerm) ||
+                        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
+                        (product.category && product.category.name.toLowerCase().includes(searchTerm))
+                    );
+                    renderMenuContent(filteredProducts, allCategories); // Search results always show all
+                } else {
+                    const activeTabHref = document.querySelector('#categoryTabs a.text-orange-600')?.getAttribute('href');
+                    if (activeTabHref === '#all-items') {
+                        renderMenuContent(allProducts, allCategories);
+                    } else if (activeTabHref) {
+                        const categoryId = activeTabHref.replace('#cat-', '');
+                        const category = allCategories.find(cat => cat._id === categoryId);
+                        const productsInCategory = allProducts.filter(product => product.category && product.category._id === categoryId);
+                        renderMenuContent(productsInCategory, category ? [category] : []);
+                    } else {
+                        renderMenuContent(allProducts, allCategories); // Fallback to all if no active tab
+                    }
+                }
             });
         }
 
-
         // Initial render
-        // This initial call will trigger the first rendering based on default 'grid' view
-        renderCategoryTabs(categories);
-        renderMenuContent(allProducts, categories);
+        renderCategoryTabs(allCategories, 'all-items'); // Set 'All' as active initially
+        renderMenuContent(allProducts, allCategories); // Show all products initially
 
         // Search functionality
         searchMenuInput.addEventListener('input', (e) => {
@@ -440,11 +483,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 (product.category && product.category.name.toLowerCase().includes(searchTerm))
             );
 
-            const filteredCategoryIds = new Set(filteredProducts.map(p => p.category ? p.category._id : null));
-            const categoriesForFilteredProducts = categories.filter(cat => filteredCategoryIds.has(cat._id));
-
-            renderCategoryTabs(categoriesForFilteredProducts);
-            renderMenuContent(filteredProducts, categoriesForFilteredProducts);
+            // When searching, we always show all filtered products, not grouped by category
+            // So, pass allCategories to renderCategoryTabs to ensure all relevant tabs are shown
+            // And pass allCategories to renderMenuContent to indicate we're not filtering by a single category
+            renderCategoryTabs(allCategories, 'all-items'); // Keep 'All' tab active during search
+            renderMenuContent(filteredProducts, allCategories); // Pass allCategories to trigger 'All Items' rendering logic
         });
 
 

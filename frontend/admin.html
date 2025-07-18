@@ -380,6 +380,14 @@
             <!-- Product List -->
             <div>
                 <h4 class="text-2xl font-semibold text-gray-800 mb-6">Your Products</h4>
+                <!-- New: Category Filter Dropdown -->
+                <div class="mb-4">
+                    <label for="productFilterCategory" class="block text-gray-700 text-base font-semibold mb-2">Filter by Category:</label>
+                    <select id="productFilterCategory" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full sm:w-1/2 md:w-1/3 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        <option value="all">All Categories</option>
+                        <!-- Categories will be populated here by JS -->
+                    </select>
+                </div>
                 <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">

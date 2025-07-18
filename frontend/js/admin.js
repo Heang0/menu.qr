@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productImageInput = document.getElementById('productImage');
     const productMessage = document.getElementById('productMessage');
     const productListTableBody = document.getElementById('productListTableBody');
+    const productFilterCategorySelect = document.getElementById('productFilterCategory'); // New: Category filter dropdown
     const editProductModal = document.getElementById('editProductModal');
     const editProductForm = document.getElementById('editProductForm');
     const editProductIdInput = document.getElementById('editProductId');
@@ -244,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             categoryListTableBody.innerHTML = '';
             productCategorySelect.innerHTML = '<option value="">Select a Category</option>'; // For add product form
             editProductCategorySelect.innerHTML = ''; // For edit product form
+            productFilterCategorySelect.innerHTML = '<option value="all">All Categories</option>'; // For product filter dropdown
 
             if (categories.length === 0) {
                 categoryListTableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4 text-gray-500">No categories added yet.</td></tr>';
@@ -271,6 +273,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optionEdit.value = category._id;
                 optionEdit.textContent = category.name;
                 editProductCategorySelect.appendChild(optionEdit);
+
+                // Populate category filter dropdown
+                const optionFilter = document.createElement('option');
+                optionFilter.value = category._id;
+                optionFilter.textContent = category.name;
+                productFilterCategorySelect.appendChild(optionFilter);
             });
 
             // Attach event listeners to new buttons
@@ -368,11 +376,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Product Management Functions ---
 
-    async function fetchProducts() {
+    // Modified fetchProducts to accept an optional categoryId
+    async function fetchProducts(categoryId = 'all') {
         clearMessage(productMessage);
         productListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Loading products...</td></tr>';
         try {
-            const products = await apiRequest('/products/my-store', 'GET');
+            let products;
+            if (categoryId === 'all') {
+                products = await apiRequest('/products/my-store', 'GET');
+            } else {
+                // Assuming your backend API supports filtering by category ID
+                products = await apiRequest(`/products/my-store?category=${categoryId}`, 'GET');
+            }
+            
             productListTableBody.innerHTML = '';
 
             if (products.length === 0) {
@@ -457,7 +473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayMessage(productMessage, 'Product added successfully!', false);
                 productForm.reset();
                 productImageInput.value = '';
-                fetchProducts(); // Refresh list
+                fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
                 updateDashboardOverview(); // Update overview counts
             } catch (error) {
                 displayMessage(productMessage, `Error adding product: ${error.message}`, true);
@@ -512,7 +528,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await apiRequest(`/products/${editProductIdInput.value}`, 'PUT', formData, true, true);
                 displayMessage(editProductMessage, 'Product updated successfully!', false);
                 editProductModal.classList.add('hidden');
-                fetchProducts(); // Refresh list
+                fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
             } catch (error) {
                 displayMessage(editProductMessage, `Error updating product: ${error.message}`, true);
             }
@@ -524,7 +540,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiRequest(`/products/${id}`, 'DELETE');
             displayMessage(productMessage, 'Product deleted successfully!', false);
-            fetchProducts(); // Refresh list
+            fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
             updateDashboardOverview(); // Update overview counts
         } catch (error) {
             displayMessage(productMessage, `Error deleting product: ${error.message}`, true);
@@ -559,12 +575,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- Event listener for product category filter ---
+    if (productFilterCategorySelect) {
+        productFilterCategorySelect.addEventListener('change', (e) => {
+            const selectedCategoryId = e.target.value;
+            fetchProducts(selectedCategoryId); // Fetch products based on selected category
+        });
+    }
+
 
     // --- Initial Data Load on Page Load ---
     (async () => {
         await fetchStoreDetails();
         await fetchCategories();
-        await fetchProducts();
+        await fetchProducts('all'); // Fetch all products initially
         await updateDashboardOverview(); // Call on initial load
     })(); // Immediately-invoked async function
 });
