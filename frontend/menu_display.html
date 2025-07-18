@@ -237,9 +237,10 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <img id="popupImage" src="" alt="Popup Image" class="block w-full h-auto object-contain mb-4">
-            <div class="text-left w-full px-4">
+            <div class="text-left w-full px-4 product-info-container"> <!-- Added product-info-container class -->
                 <h3 id="popupProductName" class="text-xl font-bold text-gray-800 mb-2"></h3>
-                <p id="popupProductDescription" class="text-sm text-gray-600"></p>
+                <p id="popupProductDescription" class="text-sm text-gray-600 mb-2"></p> <!-- Added mb-2 for spacing -->
+                <p id="popupProductPrice" class="text-lg font-bold text-orange-600"></p> <!-- NEW: Price element -->
             </div>
         </div>
     </div>

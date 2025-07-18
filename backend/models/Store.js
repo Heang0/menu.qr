@@ -1,6 +1,7 @@
 // qr-digital-menu-system/backend/models/Store.js
 
 const mongoose = require('mongoose');
+const slugify = require('slugify'); // We'll need to install this package
 
 const storeSchema = mongoose.Schema(
     {
@@ -14,6 +15,11 @@ const storeSchema = mongoose.Schema(
             type: String,
             required: [true, 'Please add a store name'],
             trim: true,
+        },
+        slug: { // New slug field
+            type: String,
+            unique: true,
+            index: true, // Add an index for faster lookups
         },
         address: {
             type: String,
@@ -55,7 +61,7 @@ const storeSchema = mongoose.Schema(
             trim: true,
             default: '',
         },
-        // We'll generate a unique ID for the public menu link, separate from _id
+        // publicUrlId will still exist but won't be used for public menu links
         publicUrlId: {
             type: String,
             unique: true,
@@ -66,6 +72,14 @@ const storeSchema = mongoose.Schema(
         timestamps: true,
     }
 );
+
+// Pre-save hook to generate slug from store name
+storeSchema.pre('save', function (next) {
+    if (this.isModified('name') || this.isNew) {
+        this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    next();
+});
 
 const Store = mongoose.model('Store', storeSchema);
 module.exports = Store;

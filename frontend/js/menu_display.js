@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeImagePopupBtn = document.getElementById('closeImagePopupBtn');
     const popupProductName = document.getElementById('popupProductName');
     const popupProductDescription = document.getElementById('popupProductDescription');
+    const popupProductPrice = document.getElementById('popupProductPrice'); // NEW: Reference to the price element
 
     const storeInfoModal = document.getElementById('storeInfoModal');
     const closeStoreInfoBtn = document.getElementById('closeStoreInfoBtn');
@@ -268,7 +269,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             productCard.appendChild(cardContent);
 
             productCard.addEventListener('click', () => {
-                openImagePopup(product.image || defaultImage, product.title, product.description);
+                // Pass product.price to openImagePopup
+                openImagePopup(product.image || defaultImage, product.title, product.description, product.price);
             });
             return productCard;
         }
@@ -319,17 +321,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             listItem.addEventListener('click', () => {
-                openImagePopup(product.image || defaultImage, product.title, product.description);
+                // Pass product.price to openImagePopup
+                openImagePopup(product.image || defaultImage, product.title, product.description, product.price);
             });
             return listItem;
         }
 
 
         // Image popup functions
-        function openImagePopup(imageUrl, productName, productDescription) {
+        function openImagePopup(imageUrl, productName, productDescription, productPrice) { // NEW: Added productPrice parameter
             popupImage.src = imageUrl;
             popupProductName.textContent = productName;
             popupProductDescription.textContent = productDescription || 'No description available.';
+            
+            // NEW: Set the price in the popup
+            if (productPrice !== undefined && productPrice !== null && productPrice !== '') {
+                popupProductPrice.textContent = productPrice;
+                popupProductPrice.classList.remove('hidden');
+            } else {
+                popupProductPrice.textContent = '';
+                popupProductPrice.classList.add('hidden');
+            }
+
             imagePopupModal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
@@ -339,6 +352,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             popupImage.src = '';
             popupProductName.textContent = '';
             popupProductDescription.textContent = '';
+            popupProductPrice.textContent = ''; // Clear price
+            popupProductPrice.classList.add('hidden'); // Hide price
             document.body.style.overflow = '';
         }
 
