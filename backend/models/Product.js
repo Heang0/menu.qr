@@ -15,9 +15,10 @@ const productSchema = mongoose.Schema(
             default: '',
         },
         price: {
-            type: Number,
+            type: String, // <--- CHANGED FROM Number TO String
             required: false, // Price is optional
-            min: 0,
+            trim: true, // Trim whitespace from the string
+            default: '', // Default to empty string instead of 0
         },
         image: {
             type: String, // URL from Cloudinary

@@ -100,18 +100,19 @@ router.put('/my-store', protect, authorizeRoles('admin'), upload.single('logo'),
 });
 
 // @desc    Get store details by Public URL ID (for customer facing menu)
-// @route   GET /api/stores/:storeId
+// @route   GET /api/stores/public/:publicUrlId  <--- CHANGED ROUTE
 // @access  Public
-router.get('/:storeId', async (req, res) => {
+router.get('/public/:publicUrlId', async (req, res) => {
     try {
-        const store = await Store.findById(req.params.storeId);
+        // Find store by publicUrlId instead of MongoDB _id
+        const store = await Store.findOne({ publicUrlId: req.params.publicUrlId });
 
         if (!store) {
             return res.status(404).json({ message: 'Store not found.' });
         }
         // Return all relevant public fields, including new ones
         res.json({
-            _id: store._id,
+            _id: store._id, // Keep _id for internal use if needed by frontend
             name: store.name,
             address: store.address,
             phone: store.phone,
@@ -125,9 +126,7 @@ router.get('/:storeId', async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching public store:', error);
-        if (error.name === 'CastError') {
-            return res.status(404).json({ message: 'Invalid Store ID.' });
-        }
+        // CastError is less likely now, but handle generic error
         res.status(500).json({ message: error.message });
     }
 });

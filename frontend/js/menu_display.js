@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const storeId = urlParams.get('storeId');
+    const publicUrlId = urlParams.get('publicUrlId'); // Changed from storeId
 
     const menuTitle = document.getElementById('menuTitle');
     const storeHeaderInfo = document.getElementById('storeHeaderInfo');
@@ -41,18 +41,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentStoreData = null;
     let currentView = 'grid'; // Default view
 
-    if (!storeId) {
+    if (!publicUrlId) { // Changed from storeId
         menuTitle.textContent = 'Menu Not Found';
         storeNameElem.textContent = 'Error: No Store ID provided.';
         loadingMessage.classList.add('hidden');
         noMenuMessage.textContent = 'Please scan a valid QR code.';
         noMenuMessage.classList.remove('hidden');
-        console.error('No storeId found in URL for menu display.');
+        console.error('No publicUrlId found in URL for menu display.');
         return;
     }
 
     try {
-        currentStoreData = await apiRequest(`/stores/${storeId}`, 'GET', null, false);
+        // Fetch store details using publicUrlId
+        currentStoreData = await apiRequest(`/stores/public/${publicUrlId}`, 'GET', null, false);
         menuTitle.textContent = `${currentStoreData.name}'s Menu`;
         storeNameElem.textContent = currentStoreData.name;
 
@@ -64,8 +65,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             storeLogoImg.style.display = 'none';
         }
 
-        allCategories = await apiRequest(`/categories/store/${storeId}`, 'GET', null, false);
-        allProducts = await apiRequest(`/products/store/${storeId}`, 'GET', null, false);
+        // Fetch categories and products using the actual MongoDB _id from currentStoreData
+        // The backend routes for categories and products still expect the MongoDB _id
+        allCategories = await apiRequest(`/categories/store/${currentStoreData._id}`, 'GET', null, false);
+        allProducts = await apiRequest(`/products/public-store/${publicUrlId}`, 'GET', null, false); // Use publicUrlId for products API
 
         loadingMessage.classList.add('hidden');
 
@@ -88,7 +91,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.preventDefault();
                 setActiveCategoryTab('all-items');
                 renderMenuContent(allProducts, allCategories); // Show all products
-                document.querySelector('#all-items-section').scrollIntoView({ behavior: 'smooth' });
+                // Use a try-catch block to gracefully handle if the element doesn't exist
+                try {
+                    document.querySelector('#all-items-section').scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    console.warn("Element #all-items-section not found for scrolling.", error);
+                }
             });
             allLi.appendChild(allA);
             categoryTabs.appendChild(allLi);
@@ -105,7 +113,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     setActiveCategoryTab(`cat-${category._id}`);
                     const productsInCategory = allProducts.filter(product => product.category && product.category._id === category._id);
                     renderMenuContent(productsInCategory, [category]); // Show only products for this category
-                    document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
+                    // Use a try-catch block to gracefully handle if the element doesn't exist
+                    try {
+                        document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
+                    } catch (error) {
+                        console.warn(`Element ${a.hash} not found for scrolling.`, error);
+                    }
                 });
                 li.appendChild(a);
                 categoryTabs.appendChild(li);
@@ -245,10 +258,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 cardContent.appendChild(description);
             }
 
-            if (product.price !== undefined && product.price !== null) {
+            if (product.price !== undefined && product.price !== null && product.price !== '') {
                 const price = document.createElement('p');
                 price.classList.add('text-orange-600', 'font-bold', 'text-md');
-                price.textContent = `$${product.price.toFixed(2)}`;
+                price.textContent = product.price; // Display price as string
                 cardContent.appendChild(price);
             }
 
@@ -298,10 +311,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             listItem.appendChild(listContent);
 
-            if (product.price !== undefined && product.price !== null) {
+            if (product.price !== undefined && product.price !== null && product.price !== '') {
                 const price = document.createElement('p');
                 price.classList.add('list-price');
-                price.textContent = `$${product.price.toFixed(2)}`;
+                price.textContent = product.price; // Display price as string
                 listItem.appendChild(price);
             }
 

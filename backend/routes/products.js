@@ -71,7 +71,7 @@ router.post('/', protect, authorizeRoles('admin'), getAdminStoreId, upload.singl
         const product = await Product.create({
             title,
             description,
-            price: price !== undefined && price !== null && price !== '' ? parseFloat(price) : undefined, // Handle optional price
+            price: price, // No parseFloat, store as string
             image: imageUrl,
             category: existingCategory._id,
             store: req.storeId,
@@ -96,18 +96,22 @@ router.get('/my-store', protect, authorizeRoles('admin'), getAdminStoreId, async
     }
 });
 
-// @desc    Get all products for a public store (by store ID)
-// @route   GET /api/products/store/:storeId
+// @desc    Get all products for a public store (by publicUrlId)
+// @route   GET /api/products/public-store/:publicUrlId  <--- CHANGED ROUTE
 // @access  Public
-router.get('/store/:storeId', async (req, res) => {
+router.get('/public-store/:publicUrlId', async (req, res) => {
     try {
-        const products = await Product.find({ store: req.params.storeId }).populate('category', 'name').sort('title');
+        // Find the store using publicUrlId to get its MongoDB _id
+        const store = await Store.findOne({ publicUrlId: req.params.publicUrlId });
+        if (!store) {
+            return res.status(404).json({ message: 'Store not found.' });
+        }
+
+        // Then find products using the actual store _id
+        const products = await Product.find({ store: store._id }).populate('category', 'name').sort('title');
         res.json(products);
     } catch (error) {
-        // If it's a CastError (invalid ObjectId format), treat as not found
-        if (error.name === 'CastError') {
-            return res.status(404).json({ message: 'Invalid Store ID.' });
-        }
+        console.error('Error fetching public store products:', error);
         res.status(500).json({ message: error.message });
     }
 });
@@ -136,7 +140,7 @@ router.put('/:id', protect, authorizeRoles('admin'), getAdminStoreId, upload.sin
 
         product.title = title || product.title;
         product.description = description !== undefined ? description : product.description; // Allow clearing description
-        product.price = price !== undefined && price !== null && price !== '' ? parseFloat(price) : null; // Allow clearing price
+        product.price = price; // No parseFloat, store as string
 
         // Handle image update
         if (req.file) {

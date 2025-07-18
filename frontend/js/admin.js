@@ -54,8 +54,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const productNameInput = document.getElementById('productName');
     const productCategorySelect = document.getElementById('productCategory');
     const productDescriptionInput = document.getElementById('productDescription');
-    const productPriceInput = document.getElementById('productPrice'); // Changed to text input
+    const productPriceInput = document.getElementById('productPrice');
     const productImageInput = document.getElementById('productImage');
+    const newProductImagePreview = document.getElementById('newProductImagePreview'); // New: Image preview element
     const productMessage = document.getElementById('productMessage');
     const productListTableBody = document.getElementById('productListTableBody');
     const productFilterCategorySelect = document.getElementById('productFilterCategory'); // Category filter dropdown
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editProductNameInput = document.getElementById('editProductName');
     const editProductCategorySelect = document.getElementById('editProductCategory');
     const editProductDescriptionInput = document.getElementById('editProductDescription');
-    const editProductPriceInput = document.getElementById('editProductPrice'); // Changed to text input
+    const editProductPriceInput = document.getElementById('editProductPrice');
     const editProductImageInput = document.getElementById('editProductImage');
     const currentProductImageImg = document.getElementById('currentProductImage');
     const editProductMessage = document.getElementById('editProductMessage');
@@ -154,8 +155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Generate QR code and display public link on load if store exists
-            if (currentStore._id) {
-                const publicMenuUrl = `${window.location.origin}/menu_display.html?storeId=${currentStore._id}`;
+            if (currentStore.publicUrlId) { // Use publicUrlId
+                const publicMenuUrl = `${window.location.origin}/menu_display.html?publicUrlId=${currentStore.publicUrlId}`; // Use publicUrlId
                 const qrCanvas = window.generateQRCode(publicMenuUrl, qrCodeContainer, 256);
                 if (qrCanvas) {
                     downloadQrBtn.style.display = 'inline-block';
@@ -462,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('title', productNameInput.value);
             formData.append('category', productCategorySelect.value);
             formData.append('description', productDescriptionInput.value);
-            formData.append('price', productPriceInput.value); // Send as string
+            formData.append('price', productPriceInput.value);
 
             if (productImageInput.files[0]) {
                 formData.append('image', productImageInput.files[0]);
@@ -473,6 +474,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayMessage(productMessage, 'Product added successfully!', false);
                 productForm.reset();
                 productImageInput.value = '';
+                newProductImagePreview.src = ''; // Clear image preview
+                newProductImagePreview.classList.add('hidden'); // Hide image preview
                 fetchProducts(productFilterCategorySelect.value); // Refresh list with current filter
                 updateDashboardOverview(); // Update overview counts
             } catch (error) {
@@ -481,12 +484,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // New: Event listener for product image input to show preview
+    if (productImageInput) {
+        productImageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    newProductImagePreview.src = e.target.result;
+                    newProductImagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                newProductImagePreview.src = '';
+                newProductImagePreview.classList.add('hidden');
+            }
+        });
+    }
+
+
     function openEditProductModal(product) {
         editProductIdInput.value = product._id;
         editProductNameInput.value = product.title;
         editProductCategorySelect.value = product.category ? product.category._id : '';
         editProductDescriptionInput.value = product.description || '';
-        editProductPriceInput.value = product.price !== undefined && product.price !== null ? product.price : ''; // Display as string
+        editProductPriceInput.value = product.price !== undefined && product.price !== null ? product.price : '';
 
         if (product.image) {
             currentProductImageImg.src = product.image;
@@ -516,7 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('title', editProductNameInput.value);
             formData.append('category', editProductCategorySelect.value);
             formData.append('description', editProductDescriptionInput.value);
-            formData.append('price', editProductPriceInput.value); // Send as string
+            formData.append('price', editProductPriceInput.value);
             
             if (editProductImageInput.files[0]) {
                 formData.append('image', editProductImageInput.files[0]);

@@ -484,6 +484,8 @@
                     <div>
                         <label for="productImage" class="block text-gray-700 text-base font-semibold mb-2">Product Image (PNG, JPG):</label>
                         <input type="file" id="productImage" name="image" accept="image/*">
+                        <!-- New: Image preview for new product -->
+                        <img id="newProductImagePreview" class="mt-4 max-h-48 object-contain rounded-lg shadow-md border border-gray-200 p-2 hidden" src="" alt="New Product Image Preview">
                     </div>
                     <div class="md:col-span-2">
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline w-full sm:w-auto transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
