@@ -1,9 +1,8 @@
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search); // Add this line
+    const urlParams = new URLSearchParams(window.location.search);
     const publicSlug = urlParams.get('slug');
-
 
     const menuTitle = document.getElementById('menuTitle');
     const storeHeaderInfo = document.getElementById('storeHeaderInfo');
@@ -21,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeImagePopupBtn = document.getElementById('closeImagePopupBtn');
     const popupProductName = document.getElementById('popupProductName');
     const popupProductDescription = document.getElementById('popupProductDescription');
-    const popupProductPrice = document.getElementById('popupProductPrice'); // NEW: Reference to the price element
+    const popupProductPrice = document.getElementById('popupProductPrice');
 
     const storeInfoModal = document.getElementById('storeInfoModal');
     const closeStoreInfoBtn = document.getElementById('closeStoreInfoBtn');
@@ -38,12 +37,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
 
-    let allProducts = [];
-    let allCategories = []; // Store all categories fetched initially
+    let allProducts = []; // Keep this to store *all* products for search functionality
+    let currentFilteredProducts = []; // Stores products currently displayed based on active category or search
+    let allCategories = [];
     let currentStoreData = null;
     let currentView = 'grid'; // Default view
+    let activeCategoryId = 'all-items'; // Track active category for re-rendering on view change
 
-  if (!publicSlug) { // Now correctly checking for publicSlug
+    if (!publicSlug) {
         menuTitle.textContent = 'Menu Not Found';
         storeNameElem.textContent = 'Error: No Store ID provided.';
         loadingMessage.classList.add('hidden');
@@ -52,6 +53,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('No publicUrlId found in URL for menu display.');
         return;
     }
+
+    // Function to fetch and render products based on category/search
+    async function fetchAndRenderProducts(categoryId = null, searchTerm = null) {
+        loadingMessage.classList.remove('hidden');
+        noMenuMessage.classList.add('hidden');
+        noSearchResultsMessage.classList.add('hidden');
+        menuContent.innerHTML = ''; // Clear previous content
+
+        try {
+            let products;
+            if (searchTerm) {
+                // If there's a search term, fetch all products and filter locally for simplicity.
+                // For very large menus, you might implement a backend search endpoint.
+                products = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false);
+                products = products.filter(product =>
+                    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                    (product.category && product.category.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            } else {
+                // If no search term, fetch products based on the category ID (or all if 'all-items')
+                const queryParams = categoryId && categoryId !== 'all-items' ? { category: categoryId } : null;
+                products = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false, false, queryParams);
+            }
+            currentFilteredProducts = products; // Update currently displayed products
+
+            loadingMessage.classList.add('hidden');
+
+            if (products.length === 0) {
+                if (searchTerm) {
+                    noSearchResultsMessage.classList.remove('hidden');
+                } else {
+                    noMenuMessage.textContent = 'No items found in this category.';
+                    noMenuMessage.classList.remove('hidden');
+                }
+                return;
+            }
+
+            // Determine how to render: grouped by category or as a single list
+            // Render as a single list if 'All' tab is active OR if searching
+            const renderAsSingleList = (activeCategoryId === 'all-items' && !searchTerm) || searchTerm;
+
+            if (renderAsSingleList) {
+                renderMenuContent(products, []); // Pass an empty array for categories to indicate no grouping
+            } else {
+                // If a specific category is selected, filter categoriesToDisplay to only that one
+                const categoriesToDisplay = allCategories.filter(cat => cat._id === activeCategoryId);
+                renderMenuContent(products, categoriesToDisplay); // Pass filtered products and specific category for grouping
+            }
+
+
+        } catch (error) {
+            console.error('Error fetching filtered products:', error.message);
+            loadingMessage.classList.add('hidden');
+            noMenuMessage.textContent = `Failed to load menu items: ${error.message}`;
+            noMenuMessage.classList.remove('hidden');
+        }
+    }
+
 
     try {
         // Fetch store details using publicUrlId
@@ -67,10 +127,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             storeLogoImg.style.display = 'none';
         }
 
-        // Fetch categories and products using the actual MongoDB _id from currentStoreData
-        // The backend routes for categories and products still expect the MongoDB _id
+        // Fetch categories (always all categories for the store)
         allCategories = await apiRequest(`/categories/store/${currentStoreData._id}`, 'GET', null, false);
-      allProducts = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false); // Use publicUrlId for products API
+
+        // Fetch all products initially to populate `allProducts` for search
+        // This initial fetch populates 'allProducts' for local search filtering.
+        // It's separate from 'fetchAndRenderProducts' which handles display logic.
+        allProducts = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false);
+
 
         loadingMessage.classList.add('hidden');
 
@@ -88,12 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const allA = document.createElement('a');
             allA.href = `#all-items`;
             allA.textContent = 'All';
-            allA.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
-            allA.addEventListener('click', (e) => {
+            allA.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300', 'cursor-pointer');
+            allA.addEventListener('click', async (e) => { // Make async
                 e.preventDefault();
+                activeCategoryId = 'all-items'; // Update active category
                 setActiveCategoryTab('all-items');
-                renderMenuContent(allProducts, allCategories); // Show all products
-                // Use a try-catch block to gracefully handle if the element doesn't exist
+                searchMenuInput.value = ''; // Clear search when "All" is clicked
+                await fetchAndRenderProducts('all-items'); // Fetch all products from backend (no category filter)
                 try {
                     document.querySelector('#all-items-section').scrollIntoView({ behavior: 'smooth' });
                 } catch (error) {
@@ -109,13 +174,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const a = document.createElement('a');
                 a.href = `#cat-${category._id}`;
                 a.textContent = category.name;
-                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300');
-                a.addEventListener('click', (e) => {
+                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300', 'cursor-pointer');
+                a.addEventListener('click', async (e) => { // Make async
                     e.preventDefault();
+                    activeCategoryId = category._id; // Update active category
                     setActiveCategoryTab(`cat-${category._id}`);
-                    const productsInCategory = allProducts.filter(product => product.category && product.category._id === category._id);
-                    renderMenuContent(productsInCategory, [category]); // Show only products for this category
-                    // Use a try-catch block to gracefully handle if the element doesn't exist
+                    searchMenuInput.value = ''; // Clear search when category is clicked
+                    await fetchAndRenderProducts(category._id); // Fetch products for this category from backend
                     try {
                         document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
                     } catch (error) {
@@ -142,21 +207,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Render Menu Content based on current view and filtered products/categories
+        // productsToRender: The list of products to display (already filtered by category or search if applicable)
+        // categoriesToRender: The list of categories to group by. If empty, it means render as a single list.
         function renderMenuContent(productsToRender, categoriesToRender) {
             menuContent.innerHTML = '';
             noSearchResultsMessage.classList.add('hidden');
+            noMenuMessage.classList.add('hidden'); // Ensure this is hidden when content is rendered
 
             if (productsToRender.length === 0) {
-                noSearchResultsMessage.classList.remove('hidden');
+                // Determine if it's no search results or no items in category
+                if (searchMenuInput.value.trim() !== '') {
+                    noSearchResultsMessage.classList.remove('hidden');
+                } else {
+                    noMenuMessage.textContent = 'No items found in this category.';
+                    noMenuMessage.classList.remove('hidden');
+                }
                 return;
             }
 
-            // If "All" tab is active or search is active, show all products in one section
-            const isAllOrSearch = categoriesToRender.length === allCategories.length || searchMenuInput.value.trim() !== '';
+            // Determine if we should group by categories or just show a single list ("All Items" or "Search Results")
+            // This is true if categoriesToRender is NOT empty AND there's no active search term
+            const shouldGroupByCategory = categoriesToRender.length > 0 && !searchMenuInput.value.trim();
 
-            if (isAllOrSearch) {
+            if (!shouldGroupByCategory) {
+                // Render as a single, mixed list (for "All Items" or "Search Results")
                 const allItemsSection = document.createElement('section');
-                allItemsSection.id = 'all-items-section'; // Unique ID for the 'All' section
+                allItemsSection.id = 'all-items-section';
                 allItemsSection.classList.add('mb-8');
 
                 const allItemsTitle = document.createElement('h2');
@@ -182,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 menuContent.appendChild(allItemsSection);
 
             } else {
-                // Render by category if a specific category tab is active and no search term
+                // Render by category (for specific category tabs)
                 categoriesToRender.forEach(category => {
                     const categorySection = document.createElement('section');
                     categorySection.id = `cat-${category._id}`;
@@ -193,9 +269,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     categoryTitle.textContent = category.name;
                     categorySection.appendChild(categoryTitle);
 
-                    const productsInCategory = productsToRender.filter(product => product.category && product.category._id === category._id);
+                    // Filter products to only those belonging to the current category being rendered
+                    // This is still needed here because productsToRender might contain ALL products if fetched initially
+                    // but we only want to display products of the current 'category' in this specific section.
+                    const productsInThisCategorySection = productsToRender.filter(product => product.category && product.category._id === category._id);
 
-                    if (productsInCategory.length === 0) {
+
+                    if (productsInThisCategorySection.length === 0) {
                         const noItemsMessage = document.createElement('p');
                         noItemsMessage.classList.add('text-gray-500', 'text-center', 'col-span-full');
                         noItemsMessage.textContent = 'No items in this category yet.';
@@ -204,14 +284,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (currentView === 'grid') {
                             const productGrid = document.createElement('div');
                             productGrid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-2', 'md:grid-cols-3', 'lg:grid-cols-4', 'gap-4');
-                            productsInCategory.forEach(product => {
+                            productsInThisCategorySection.forEach(product => {
                                 productGrid.appendChild(createProductGridCard(product));
                             });
                             categorySection.appendChild(productGrid);
                         } else { // List View
                             const productList = document.createElement('div');
                             productList.classList.add('divide-y', 'divide-gray-200');
-                            productsInCategory.forEach(product => {
+                            productsInThisCategorySection.forEach(product => {
                                 productList.appendChild(createProductListItem(product));
                             });
                             categorySection.appendChild(productList);
@@ -330,12 +410,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         // Image popup functions
-        function openImagePopup(imageUrl, productName, productDescription, productPrice) { // NEW: Added productPrice parameter
+        function openImagePopup(imageUrl, productName, productDescription, productPrice) {
             popupImage.src = imageUrl;
             popupProductName.textContent = productName;
             popupProductDescription.textContent = productDescription || 'No description available.';
-            
-            // NEW: Set the price in the popup
+
+            // Set the price in the popup
             if (productPrice !== undefined && productPrice !== null && productPrice !== '') {
                 popupProductPrice.textContent = productPrice;
                 popupProductPrice.classList.remove('hidden');
@@ -353,8 +433,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             popupImage.src = '';
             popupProductName.textContent = '';
             popupProductDescription.textContent = '';
-            popupProductPrice.textContent = ''; // Clear price
-            popupProductPrice.classList.add('hidden'); // Hide price
+            popupProductPrice.textContent = '';
+            popupProductPrice.classList.add('hidden');
             document.body.style.overflow = '';
         }
 
@@ -379,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 socialFacebook.href = currentStoreData.facebookUrl;
                 socialFacebook.classList.remove('hidden');
             } else { socialFacebook.classList.add('hidden'); }
-            
+
             if (currentStoreData.telegramUrl) {
                 socialTelegram.href = currentStoreData.telegramUrl;
                 socialTelegram.classList.remove('hidden');
@@ -437,86 +517,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // View Toggle Event Listeners
         if (gridViewBtn) {
-            gridViewBtn.addEventListener('click', () => {
+            gridViewBtn.addEventListener('click', async () => { // Make async
                 currentView = 'grid';
                 gridViewBtn.classList.add('text-orange-600');
                 listViewBtn.classList.remove('text-orange-600');
                 listViewBtn.classList.add('text-gray-400');
-                // Re-render with current filters (from search input)
-                const searchTerm = searchMenuInput.value.toLowerCase();
-                if (searchTerm) {
-                    const filteredProducts = allProducts.filter(product =>
-                        product.title.toLowerCase().includes(searchTerm) ||
-                        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-                        (product.category && product.category.name.toLowerCase().includes(searchTerm))
-                    );
-                    renderMenuContent(filteredProducts, allCategories); // Search results always show all
-                } else {
-                    // If no search term, render based on currently active category tab (which could be 'All')
-                    const activeTabHref = document.querySelector('#categoryTabs a.text-orange-600')?.getAttribute('href');
-                    if (activeTabHref === '#all-items') {
-                        renderMenuContent(allProducts, allCategories);
-                    } else if (activeTabHref) {
-                        const categoryId = activeTabHref.replace('#cat-', '');
-                        const category = allCategories.find(cat => cat._id === categoryId);
-                        const productsInCategory = allProducts.filter(product => product.category && product.category._id === categoryId);
-                        renderMenuContent(productsInCategory, category ? [category] : []);
-                    } else {
-                        renderMenuContent(allProducts, allCategories); // Fallback to all if no active tab
-                    }
-                }
+                // Re-render based on current search term or active category
+                await fetchAndRenderProducts(activeCategoryId, searchMenuInput.value.trim()); // Use activeCategoryId and search term
             });
         }
 
         if (listViewBtn) {
-            listViewBtn.addEventListener('click', () => {
+            listViewBtn.addEventListener('click', async () => { // Make async
                 currentView = 'list';
                 listViewBtn.classList.add('text-orange-600');
                 gridViewBtn.classList.remove('text-orange-600');
                 gridViewBtn.classList.add('text-gray-400');
-                // Re-render with current filters (from search input)
-                const searchTerm = searchMenuInput.value.toLowerCase();
-                if (searchTerm) {
-                    const filteredProducts = allProducts.filter(product =>
-                        product.title.toLowerCase().includes(searchTerm) ||
-                        (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-                        (product.category && product.category.name.toLowerCase().includes(searchTerm))
-                    );
-                    renderMenuContent(filteredProducts, allCategories); // Search results always show all
-                } else {
-                    const activeTabHref = document.querySelector('#categoryTabs a.text-orange-600')?.getAttribute('href');
-                    if (activeTabHref === '#all-items') {
-                        renderMenuContent(allProducts, allCategories);
-                    } else if (activeTabHref) {
-                        const categoryId = activeTabHref.replace('#cat-', '');
-                        const category = allCategories.find(cat => cat._id === categoryId);
-                        const productsInCategory = allProducts.filter(product => product.category && product.category._id === categoryId);
-                        renderMenuContent(productsInCategory, category ? [category] : []);
-                    } else {
-                        renderMenuContent(allProducts, allCategories); // Fallback to all if no active tab
-                    }
-                }
+                // Re-render based on current search term or active category
+                await fetchAndRenderProducts(activeCategoryId, searchMenuInput.value.trim()); // Use activeCategoryId and search term
             });
         }
 
         // Initial render
         renderCategoryTabs(allCategories, 'all-items'); // Set 'All' as active initially
-        renderMenuContent(allProducts, allCategories); // Show all products initially
+        await fetchAndRenderProducts('all-items'); // Initial fetch of all products
 
         // Search functionality
-        searchMenuInput.addEventListener('input', (e) => {
+        searchMenuInput.addEventListener('input', async (e) => { // Make async
             const searchTerm = e.target.value.toLowerCase();
-            const filteredProducts = allProducts.filter(product =>
-                product.title.toLowerCase().includes(searchTerm) ||
-                (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-                (product.category && product.category.name.toLowerCase().includes(searchTerm))
-            );
+            // When searching, reset active category to "all-items" visually and logically
+            activeCategoryId = 'all-items';
+            setActiveCategoryTab('all-items');
 
-            // When searching, we always show all filtered products, not grouped by category
-            // So, pass allCategories to renderCategoryTabs to ensure all relevant tabs are shown
-            // And pass allCategories to renderMenuContent to indicate we're not filtering by a single category
-            renderCategoryTabs(allCategories, 'all-items'); // Keep 'All' tab active during search
-            renderMenuContent(filteredProducts, allCategories); // Pass allCategories to trigger 'All Items' rendering logic
+            await fetchAndRenderProducts(null, searchTerm); // Pass null for category, searchTerm for search
         });
 
 

@@ -25,6 +25,12 @@ const app = express();
 
 // --- Middleware ---
 
+// NEW: Global request logger - This will log every incoming request to the console
+app.use((req, res, next) => {
+    console.log(`Incoming Request: ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 // Configure CORS for specific origins and methods
 const corsOptions = {
     origin: [
@@ -71,7 +77,8 @@ app.use(helmet({
             connectSrc: [
                 "'self'",
                 "https://generativelanguage.googleapis.com", // Gemini API calls
-                "https://menu-qr-61oz.onrender.com" // Explicitly allow connections to your own backend domain
+                "https://menu-qr-61oz.onrender.com", // Explicitly allow connections to your own backend domain
+                "http://localhost:5000" // NEW: Allow frontend to connect to local backend
             ],
             objectSrc: ["'none'"], // Disallow <object>, <embed>, <applet>
             mediaSrc: ["'self'"], // Allow media from same origin

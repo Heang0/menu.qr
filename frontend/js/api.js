@@ -1,6 +1,7 @@
 // qr-digital-menu-system/frontend/js/api.js
 
-// IMPORTANT: Change this to your deployed Render backend URL!
+// IMPORTANT: Change this to your deployed Render backend URL when deploying!
+// For local development, it should typically be http://localhost:5000/api
 const API_BASE_URL = 'https://menu-qr-61oz.onrender.com/api'; // <--- Update this line!
 
 /**
@@ -10,9 +11,10 @@ const API_BASE_URL = 'https://menu-qr-61oz.onrender.com/api'; // <--- Update thi
  * @param {object} [body=null] - Request body for POST/PUT requests.
  * @param {boolean} [requiresAuth=true] - Whether the request requires a JWT token.
  * @param {boolean} [isFormData=false] - Whether the body is FormData (for file uploads).
+ * @param {object} [queryParams=null] - Optional object for query parameters (e.g., { category: 'id123' }).
  * @returns {Promise<object>} - A promise that resolves with the JSON response.
  */
-async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = true, isFormData = false) {
+async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = true, isFormData = false, queryParams = null) {
     const headers = {};
     const config = {
         method: method,
@@ -39,8 +41,15 @@ async function apiRequest(endpoint, method = 'GET', body = null, requiresAuth = 
 
     config.headers = headers;
 
+    // Add query parameters to the URL
+    let url = `${API_BASE_URL}${endpoint}`;
+    if (queryParams) {
+        const params = new URLSearchParams(queryParams);
+        url += `?${params.toString()}`;
+    }
+
     try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+        const response = await fetch(url, config);
 
         const contentType = response.headers.get('content-type');
         let data = null;

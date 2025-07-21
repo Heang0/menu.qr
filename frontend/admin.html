@@ -6,6 +6,8 @@
     <title>Admin Dashboard - QR Digital Menu</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Google Fonts Import for Battambang (Khmer) and Inter (English Professional) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -240,11 +242,103 @@
             color: #4b5563;
             line-height: 1.4;
         }
+
+        /* Custom Message/Confirmation Modal Styling */
+        #customMessageModal .modal-content {
+            max-width: 450px;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        #customMessageModal .modal-title {
+            font-size: 1.75rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #1f2937; /* text-gray-800 */
+            margin-bottom: 1rem;
+        }
+        #customMessageModal .modal-body {
+            font-size: 1rem; /* text-base */
+            color: #4b5563; /* text-gray-700 */
+            margin-bottom: 1.5rem;
+        }
+        #customMessageModal .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        #customMessageModal .modal-button {
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 700; /* font-bold */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #customMessageModal .modal-button.confirm-btn {
+            background-color: #ef4444; /* bg-red-500 */
+            color: white;
+        }
+        #customMessageModal .modal-button.confirm-btn:hover {
+            background-color: #dc2626; /* hover:bg-red-600 */
+        }
+        #customMessageModal .modal-button.cancel-btn {
+            background-color: #d1d5db; /* bg-gray-300 */
+            color: #374151; /* text-gray-800 */
+        }
+        #customMessageModal .modal-button.cancel-btn:hover {
+            background-color: #9ca3af; /* hover:bg-gray-400 */
+        }
+        #customMessageModal .modal-button.ok-btn {
+            background-color: #2563eb; /* bg-blue-600 */
+            color: white;
+        }
+        #customMessageModal .modal-button.ok-btn:hover {
+            background-color: #1d4ed8; /* hover:bg-blue-700 */
+        }
+
+        /* Sidebar responsiveness */
+        #sidebar {
+            /* On small screens, it's full width and hidden by default */
+            width: 100%;
+            height: 100vh; /* Full viewport height on mobile for overlay */
+            position: fixed; /* Fix to top for mobile overlay */
+            top: 0; /* Align to top */
+            left: 0;
+            right: 0;
+            z-index: 40; /* Above main content, below modals */
+            padding-top: 4rem; /* Space for fixed mobile header */
+            padding-bottom: 1rem;
+            transition: transform 0.3s ease-out; /* Smooth slide in/out */
+            transform: translateX(-100%); /* Start off-screen to the left */
+            overflow-y: auto; /* Allow scrolling if content is long */
+        }
+        #sidebar.hidden {
+            transform: translateX(-100%); /* Keep hidden off-screen */
+        }
+        #sidebar:not(.hidden) { /* Use :not(.hidden) to apply styles when visible */
+            transform: translateX(0); /* Slide in */
+        }
+
+        @media (min-width: 1024px) { /* lg breakpoint */
+            #sidebar {
+                position: sticky; /* Sticky on desktop */
+                top: 0;
+                height: 100vh; /* Full viewport height on desktop */
+                width: 16rem; /* lg:w-64 */
+                transform: translateX(0); /* Always visible on desktop */
+                padding-top: 1.5rem; /* Reset padding for desktop */
+            }
+            #sidebar.hidden {
+                transform: translateX(0); /* Override hidden for desktop */
+            }
+            .lg\:flex {
+                display: flex !important; /* Ensure flex on desktop */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans leading-normal tracking-normal flex flex-col lg:flex-row min-h-screen text-gray-800">
     <!-- Header for Mobile (Hamburger Icon) -->
-    <header class="lg:hidden bg-gray-900 text-white p-4 flex justify-between items-center shadow-lg">
+    <header class="lg:hidden bg-gray-900 text-white p-4 flex justify-between items-center shadow-lg sticky top-0 z-50">
         <h1 class="text-2xl font-extrabold text-blue-400">Admin Panel</h1>
         <button id="mobileMenuButton" class="text-white focus:outline-none">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
@@ -252,9 +346,8 @@
     </header>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="w-full lg:w-64 bg-gray-900 text-white p-6 space-y-8 flex flex-col lg:flex-shrink-0 shadow-lg lg:shadow-xl lg:sticky lg:top-0 lg:h-screen hidden lg:flex">
-        <!-- Removed duplicate Admin Panel H1 from sidebar -->
-        <h1 class="text-4xl font-extrabold mb-8 text-center lg:text-left text-blue-400 hidden lg:block">Admin Panel</h1> <!-- Kept for larger screens if desired, but hidden on mobile -->
+    <aside id="sidebar" class="bg-gray-900 text-white p-6 space-y-8 flex-col lg:flex-shrink-0 shadow-lg lg:shadow-xl lg:sticky lg:top-0 lg:h-screen hidden lg:flex">
+        <h1 class="text-4xl font-extrabold mb-8 text-center lg:text-left text-blue-400">Admin Panel</h1>
         <nav class="flex-grow">
             <ul class="space-y-3">
                 <li>
@@ -290,16 +383,17 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto p-8 sm:p-10 lg:p-12">
-        <div class="flex justify-between items-center mb-10 border-b-2 border-blue-500 pb-4">
-            <h2 class="text-4xl font-bold text-gray-900">Admin Dashboard</h2>
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-12">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 border-b-2 border-blue-500 pb-4">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4 sm:mb-0">Admin Dashboard</h2>
             <img id="mainHeaderStoreLogo" src="" alt="Store Logo" class="h-12 w-12 object-contain rounded-full border border-gray-300 p-1 bg-white shadow-sm" style="display: none;">
         </div>
 
         <!-- Dashboard Overview Section -->
-        <section id="dashboard-overview" class="bg-white p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
-            <h3 class="text-3xl font-semibold text-gray-800 mb-8 border-b border-gray-200 pb-4">Dashboard Overview</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section id="dashboard-overview" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
+            <h3 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8 border-b border-gray-200 pb-4">Dashboard Overview</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Adjusted grid for better responsiveness -->
                 <div class="bg-blue-500 text-white p-6 rounded-xl shadow-md flex items-center justify-between">
                     <div>
                         <p class="text-2xl font-bold" id="totalProductsCount">0</p>
@@ -314,55 +408,71 @@
                     </div>
                     <i class="fas fa-folder-open text-4xl opacity-50"></i>
                 </div>
+                <!-- Container for Category Product Counts -->
+                <!-- Removed sm:col-span-2 to allow it to flow naturally or stack -->
+                <div id="categoryProductCountsContainer" class="bg-purple-500 text-white p-6 rounded-xl shadow-md overflow-y-auto max-h-48"> 
+                    <h4 class="text-xl font-semibold mb-3">Products per Category:</h4>
+                    <ul id="categoryProductCountsList" class="space-y-2 text-lg">
+                        <!-- Counts will be dynamically loaded here by JavaScript -->
+                        <li class="text-gray-200">Loading...</li>
+                    </ul>
+                </div>
             </div>
         </section>
 
         <!-- Store Info & QR Management -->
-        <section id="store-management" class="bg-white p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
-            <h3 class="text-3xl font-semibold text-gray-800 mb-8 border-b border-gray-200 pb-4">Store Information & QR Code</h3>
-            <form id="storeForm" class="space-y-6">
+        <section id="store-management" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
+            <h3 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8 border-b border-gray-200 pb-4">Store Information & QR Code</h3>
+            <form id="storeForm" class="space-y-4 sm:space-y-6">
+                <!-- Adjusted spacing for responsiveness -->
                 <div>
                     <label for="storeName" class="block text-gray-700 text-base font-semibold mb-2">Store Name:</label>
                     <input type="text" id="storeName" name="name" required placeholder="Your Store Name"
-                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                 </div>
                 <div>
                     <label for="storeAddress" class="block text-gray-700 text-base font-semibold mb-2">Address:</label>
                     <input type="text" id="storeAddress" name="address" placeholder="123 Main St, City, Country"
-                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                 </div>
                 <div>
                     <label for="storePhone" class="block text-gray-700 text-base font-semibold mb-2">Phone:</label>
                     <input type="tel" id="storePhone" name="phone" placeholder="+123 456 7890"
-                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                 </div>
                 <div>
                     <label for="storeDescription" class="block text-gray-700 text-base font-semibold mb-2">Store Description:</label>
                     <textarea id="storeDescription" name="description" rows="4" placeholder="A brief description of your store..."
-                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
+                        class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
                 </div>
                 <!-- Social Media Inputs -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- Adjusted gap for responsiveness -->
                     <div>
                         <label for="storeFacebook" class="block text-gray-700 text-base font-semibold mb-2">Facebook URL (Optional):</label>
-                        <input type="url" id="storeFacebook" name="facebookUrl" placeholder="https://facebook.com/yourstore">
+                        <input type="url" id="storeFacebook" name="facebookUrl" placeholder="https://facebook.com/yourstore"
+                            class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                     <div>
                         <label for="storeTelegram" class="block text-gray-700 text-base font-semibold mb-2">Telegram URL (Optional):</label>
-                        <input type="url" id="storeTelegram" name="telegramUrl" placeholder="https://t.me/yourstore">
+                        <input type="url" id="storeTelegram" name="telegramUrl" placeholder="https://t.me/yourstore"
+                            class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                     <div>
                         <label for="storeTikTok" class="block text-gray-700 text-base font-semibold mb-2">TikTok URL (Optional):</label>
-                        <input type="url" id="storeTikTok" name="tiktokUrl" placeholder="https://tiktok.com/@yourstore">
+                        <input type="url" id="storeTikTok" name="tiktokUrl" placeholder="https://tiktok.com/@yourstore"
+                            class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                     <div>
                         <label for="storeWebsite" class="block text-gray-700 text-base font-semibold mb-2">Website URL (Optional):</label>
-                        <input type="url" id="storeWebsite" name="websiteUrl" placeholder="https://yourstore.com">
+                        <input type="url" id="storeWebsite" name="websiteUrl" placeholder="https://yourstore.com"
+                            class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                 </div>
                 <div>
                     <label for="storeLogo" class="block text-gray-700 text-base font-semibold mb-2">Store Logo (PNG, JPG):</label>
-                    <input type="file" id="storeLogo" name="logo" accept="image/*">
+                    <input type="file" id="storeLogo" name="logo" accept="image/*"
+                        class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                     <img id="currentLogo" class="mt-6 max-h-48 object-contain rounded-lg shadow-md border border-gray-200 p-2" src="" alt="Current Store Logo" style="display: none;">
                     <div class="mt-4" id="removeLogoContainer" style="display: none;">
                         <input type="checkbox" id="removeStoreLogo" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -375,8 +485,8 @@
                 <p id="storeMessage" class="text-center text-sm mt-4 hidden"></p>
             </form>
 
-            <div class="mt-12 p-8 bg-gray-50 rounded-2xl border border-gray-200 text-center shadow-inner">
-                <h4 class="text-2xl font-semibold text-gray-800 mb-6">Your Store QR Code:</h4>
+            <div class="mt-12 p-6 sm:p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
+                <h4 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Your Store QR Code:</h4>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
                     <div id="qrCodeContainer" class="p-5 bg-white border border-gray-200 rounded-xl inline-block shadow-lg flex-shrink-0">
                         <!-- QR code will be generated here -->
@@ -390,10 +500,10 @@
             </div>
 
             <!-- Public Menu Link Section -->
-            <div class="mt-12 p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
-                <h4 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Direct Menu Link:</h4>
+            <div class="mt-12 p-6 sm:p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
+                <h4 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 text-center">Direct Menu Link:</h4>
                 <div class="flex flex-col sm:flex-row items-center gap-4">
-                    <input type="text" id="publicMenuLink" readonly value="Link will appear here after saving store info." class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight bg-gray-100 cursor-copy text-base">
+                    <input type="text" id="publicMenuLink" readonly value="Link will appear here after saving store info." class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight bg-gray-100 cursor-copy text-base">
                     <button id="copyMenuLinkBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 w-full sm:w-auto shadow-md hover:shadow-lg" style="display: none;">
                         Copy Link
                     </button>
@@ -403,10 +513,10 @@
         </section>
 
         <!-- Category Management -->
-        <section id="category-management" class="bg-white p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
-            <h3 class="text-3xl font-semibold text-gray-800 mb-8 border-b border-gray-200 pb-4">Manage Categories</h3>
+        <section id="category-management" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
+            <h3 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8 border-b border-gray-200 pb-4">Manage Categories</h3>
             <form id="categoryForm" class="flex flex-col sm:flex-row gap-4 mb-8">
-                <input type="text" id="categoryName" placeholder="New Category Name" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                <input type="text" id="categoryName" placeholder="New Category Name" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                 <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline w-full sm:w-auto transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                     Add Category
                 </button>
@@ -417,8 +527,8 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category Name</th>
-                            <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category Name</th>
+                            <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="categoryList" class="bg-white divide-y divide-gray-200">
@@ -433,18 +543,18 @@
             <!-- Edit Category Modal -->
             <div id="editCategoryModal" class="modal-overlay hidden">
                 <div class="modal-content">
-                    <h3 class="text-3xl font-bold text-gray-800 mb-6 text-center">Edit Category</h3>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Edit Category</h3>
                     <form id="editCategoryForm" class="space-y-6">
                         <input type="hidden" id="editCategoryId">
                         <div>
                             <label for="editCategoryName" class="block text-gray-700 text-base font-semibold mb-2">Category Name:</label>
-                            <input type="text" id="editCategoryName" name="name" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                            <input type="text" id="editCategoryName" name="name" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                         </div>
                         <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4 mt-8">
-                            <button type="button" id="cancelEditCategoryBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <button type="button" id="cancelEditCategoryBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                                 Cancel
                             </button>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                                 Save Changes
                             </button>
                         </div>
@@ -455,39 +565,41 @@
         </section>
 
         <!-- Product Management -->
-        <section id="product-management" class="bg-white p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
-            <h3 class="text-3xl font-semibold text-gray-800 mb-8 border-b border-gray-200 pb-4">Manage Products</h3>
+        <section id="product-management" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl mb-12 border border-gray-200">
+            <h3 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-6 sm:mb-8 border-b border-gray-200 pb-4">Manage Products</h3>
 
             <!-- Create Product Form -->
-            <div class="mb-10 p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
-                <h4 class="text-2xl font-semibold text-gray-800 mb-6">Add New Product</h4>
-                <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-10 p-6 sm:p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-inner">
+                <h4 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Add New Product</h4>
+                <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <!-- Adjusted gap for responsiveness -->
                     <div>
                         <label for="productName" class="block text-gray-700 text-base font-semibold mb-2">Product Name:</label>
-                        <input type="text" id="productName" name="title" required placeholder="Delicious Dish" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        <input type="text" id="productName" name="title" required placeholder="Delicious Dish" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                     <div>
                         <label for="productCategory" class="block text-gray-700 text-base font-semibold mb-2">Category:</label>
-                        <select id="productCategory" name="category" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        <select id="productCategory" name="category" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                             <option value="">Select a Category</option>
                             <!-- Categories will be populated here by JS -->
                         </select>
                     </div>
                     <div class="md:col-span-2">
                         <label for="productDescription" class="block text-gray-700 text-base font-semibold mb-2">Description:</label>
-                        <textarea id="productDescription" name="description" rows="4" placeholder="A brief description of the product..." class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
+                        <textarea id="productDescription" name="description" rows="4" placeholder="A brief description of the product..." class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
                     </div>
                     <div>
                         <label for="productPrice" class="block text-gray-700 text-base font-semibold mb-2">Price (Optional):</label>
-                        <input type="text" id="productPrice" name="price" placeholder="e.g., 9.99 or 1XX$" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                        <input type="text" id="productPrice" name="price" placeholder="e.g., 9.99 or 1XX$" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                     </div>
                     <div>
                         <label for="productImage" class="block text-gray-700 text-base font-semibold mb-2">Product Image (PNG, JPG):</label>
-                        <input type="file" id="productImage" name="image" accept="image/*">
+                        <input type="file" id="productImage" name="image" accept="image/*"
+                            class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                         <!-- New: Image preview for new product -->
                         <img id="newProductImagePreview" class="mt-4 max-h-48 object-contain rounded-lg shadow-md border border-gray-200 p-2 hidden" src="" alt="New Product Image Preview">
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2 flex justify-start">
                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg focus:outline-none focus:shadow-outline w-full sm:w-auto transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                             Add Product
                         </button>
@@ -498,28 +610,34 @@
 
             <!-- Product List -->
             <div>
-                <h4 class="text-2xl font-semibold text-gray-800 mb-6">Your Products</h4>
-                <!-- New: Category Filter Dropdown -->
-                <div class="mb-4">
-                    <label for="productFilterCategory" class="block text-gray-700 text-base font-semibold mb-2">Filter by Category:</label>
-                    <select id="productFilterCategory" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full sm:w-1/2 md:w-1/3 py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
-                        <option value="all">All Categories</option>
-                        <!-- Categories will be populated here by JS -->
-                    </select>
+                <h4 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">Your Products</h4>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <!-- Search Input -->
+                    <div class="relative flex-grow">
+                        <input type="text" id="productSearchInput" placeholder="Search products..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <!-- Filter by Category Dropdown -->
+                    <div class="flex-shrink-0 w-full sm:w-1/2 md:w-1/3">
+                        <label for="productFilterCategory" class="sr-only">Filter by Category:</label>
+                        <select id="productFilterCategory" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                            <option value="all">All Categories</option>
+                            <!-- Categories will be populated here by JS -->
+                        </select>
+                    </div>
                 </div>
                 <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Image</th>
-                                <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Name</th>
-                                <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category</th>
-                                <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price (USD)</th>
-                                <th class="py-4 px-6 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Image</th>
+                                <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product Name</th>
+                                <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category</th>
+                                <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price (USD)</th>
+                                <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="productListTableBody" class="bg-white divide-y divide-gray-200">
-                            <!-- Product rows will be loaded here by JavaScript -->
                             <tr>
                                 <td colspan="5" class="text-center py-6 text-gray-500 text-base">No products added yet.</td>
                             </tr>
@@ -531,37 +649,38 @@
             <!-- Edit Product Modal -->
             <div id="editProductModal" class="modal-overlay hidden">
                 <div class="modal-content">
-                    <h3 class="text-3xl font-bold text-gray-800 mb-6 text-center">Edit Product</h3>
+                    <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 text-center">Edit Product</h3>
                     <form id="editProductForm" class="space-y-6">
                         <input type="hidden" id="editProductId">
                         <div>
                             <label for="editProductName" class="block text-gray-700 text-base font-semibold mb-2">Product Name:</label>
-                            <input type="text" id="editProductName" name="title" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                            <input type="text" id="editProductName" name="title" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                         </div>
                         <div>
                             <label for="editProductCategory" class="block text-gray-700 text-base font-semibold mb-2">Category:</label>
-                            <select id="editProductCategory" name="category" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                            <select id="editProductCategory" name="category" required class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                                 <!-- Categories will be populated here by JS -->
                             </select>
                         </div>
                         <div>
                             <label for="editProductDescription" class="block text-gray-700 text-base font-semibold mb-2">Description:</label>
-                            <textarea id="editProductDescription" name="description" rows="4" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
+                            <textarea id="editProductDescription" name="description" rows="4" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base"></textarea>
                         </div>
                         <div>
                             <label for="editProductPrice" class="block text-gray-700 text-base font-semibold mb-2">Price (Optional):</label>
-                            <input type="text" id="editProductPrice" name="price" placeholder="e.g., 9.99 or 1XX$" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
+                            <input type="text" id="editProductPrice" name="price" placeholder="e.g., 9.99 or 1XX$" class="shadow-sm appearance-none border-2 border-gray-300 rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-base">
                         </div>
                         <div>
                             <label for="editProductImage" class="block text-gray-700 text-base font-semibold mb-2">Product Image (select to change):</label>
-                            <input type="file" id="editProductImage" name="image" accept="image/*">
+                            <input type="file" id="editProductImage" name="image" accept="image/*"
+                                class="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
                             <img id="currentProductImage" class="mt-6 max-h-48 object-contain rounded-lg shadow-md border border-gray-200 p-2" src="" alt="Current Product Image" style="display: none;">
                         </div>
                         <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4 mt-8">
-                            <button type="button" id="cancelEditProductBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <button type="button" id="cancelEditProductBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                                 Cancel
                             </button>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
                                 Save Changes
                             </button>
                         </div>
@@ -582,6 +701,18 @@
             <div class="product-popup-info">
                 <h3 id="popupProductTitle" class="text-2xl font-bold text-gray-800 mb-2"></h3>
                 <p id="popupProductDescriptionDetail" class="text-gray-600 text-base"></p>
+                <p id="popupProductPriceDetail" class="text-lg font-bold text-gray-800 mt-2"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message/Confirmation Modal Structure -->
+    <div id="customMessageModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 id="customMessageTitle" class="modal-title"></h3>
+            <p id="customMessageBody" class="modal-body"></p>
+            <div id="customMessageButtons" class="modal-buttons">
+                <!-- Buttons will be injected by JavaScript -->
             </div>
         </div>
     </div>
