@@ -12,6 +12,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mobileMenuButton = document.getElementById('mobileMenuButton');
     const sidebar = document.getElementById('sidebar');
 
+    // Content Sections (NEW: Grouping all main content sections)
+    const contentSections = document.querySelectorAll('.content-section');
+    const dashboardOverviewSection = document.getElementById('dashboard-overview');
+    const storeManagementSection = document.getElementById('store-management');
+    const categoryManagementSection = document.getElementById('category-management');
+    const productManagementSection = document.getElementById('product-management'); // Main product section
+    const addProductSubSection = document.getElementById('add-product'); // Sub-section for Add Product
+    const listProductsSubSection = document.getElementById('list-products'); // Sub-section for Your Products
+
     // Dashboard Overview
     const totalProductsCount = document.getElementById('totalProductsCount');
     const totalCategoriesCount = document.getElementById('totalCategoriesCount');
@@ -175,6 +184,103 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // --- SPA Navigation Logic ---
+    function showSection(sectionId) {
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none'; // Explicitly hide
+        });
+
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+            targetSection.style.display = 'block'; // Explicitly show
+
+            // Special handling for product management sub-sections
+            if (sectionId === 'product-management') {
+                // By default, show the "Your Products" list when "Products" is clicked
+                // or if coming from a direct link to #product-management
+                showProductSubSection('list-products');
+            } else {
+                // Ensure product sub-sections are hidden when navigating away from main product section
+                addProductSubSection.style.display = 'none';
+                listProductsSubSection.style.display = 'none';
+            }
+        }
+    }
+
+    function showProductSubSection(subSectionId) {
+        addProductSubSection.style.display = 'none';
+        listProductsSubSection.style.display = 'none';
+
+        const targetSubSection = document.getElementById(subSectionId);
+        if (targetSubSection) {
+            targetSubSection.style.display = 'block';
+            // Ensure the main product management section is also visible
+            productManagementSection.classList.add('active');
+            productManagementSection.style.display = 'block';
+        }
+    }
+
+
+    // Add event listeners to sidebar links
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default hash behavior
+            const targetId = link.getAttribute('href').substring(1); // Get section ID from href
+
+            // Handle main sections
+            if (['dashboard-overview', 'store-management', 'category-management'].includes(targetId)) {
+                showSection(targetId);
+            }
+            // Handle main Products link
+            else if (targetId === 'product-management') {
+                showSection(targetId); // Show main product section
+                showProductSubSection('list-products'); // Default to showing product list
+                // Update active state for sidebar links
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('bg-gray-700', 'text-blue-300'));
+                link.classList.add('bg-gray-700', 'text-blue-300');
+                document.querySelector('a[href="#list-products"]').classList.add('bg-gray-700', 'text-blue-300'); // Highlight sub-link
+            }
+            // Handle product sub-links
+            else if (['add-product', 'list-products'].includes(targetId)) {
+                showSection('product-management'); // Ensure main product section is visible
+                showProductSubSection(targetId); // Show specific sub-section
+                // Update active state for sidebar links
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('bg-gray-700', 'text-blue-300'));
+                // Highlight main "Products" link
+                document.querySelector('a[href="#product-management"]').classList.add('bg-gray-700', 'text-blue-300');
+                // Highlight the specific sub-link
+                link.classList.add('bg-gray-700', 'text-blue-300');
+            }
+
+            // After showing section, re-fetch data if needed
+            if (targetId === 'dashboard-overview') {
+                updateDashboardOverview();
+            } else if (targetId === 'store-management') {
+                fetchStoreDetails();
+            } else if (targetId === 'category-management') {
+                fetchCategories();
+            } else if (targetId === 'list-products') {
+                // Ensure filter and search are reset/applied when navigating to product list
+                productFilterCategorySelect.value = productFilterCategorySelect.dataset.currentFilter || 'all'; // Restore last filter
+                productSearchInput.value = ''; // Clear search on navigation
+                fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
+            } else if (targetId === 'add-product') {
+                // Clear add product form when navigating to it
+                productForm.reset();
+                newProductImagePreview.src = '';
+                newProductImagePreview.classList.add('hidden');
+            }
+
+            // Close mobile sidebar if open
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+
     // --- Dashboard Overview Functions ---
     async function updateDashboardOverview() {
         try {
@@ -184,7 +290,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             totalProductsCount.textContent = products.length;
             totalCategoriesCount.textContent = categories.length;
 
-            // Calculate and display products per category
             const categoryCounts = {};
             categories.forEach(cat => {
                 categoryCounts[cat._id] = { name: cat.name, count: 0 };
@@ -196,11 +301,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
 
-            categoryProductCountsList.innerHTML = ''; // Clear previous list items
+            categoryProductCountsList.innerHTML = '';
             if (categories.length === 0) {
                 categoryProductCountsList.innerHTML = '<li class="text-gray-200">No categories added yet.</li>';
             } else {
-                // Sort categories by name for consistent display
                 categories.sort((a, b) => a.name.localeCompare(b.name)).forEach(cat => {
                     const li = document.createElement('li');
                     li.classList.add('flex', 'justify-between', 'items-center', 'py-1');
@@ -216,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error fetching dashboard overview:', error.message);
             totalProductsCount.textContent = 'N/A';
             totalCategoriesCount.textContent = 'N/A';
-            categoryProductCountsList.innerHTML = '<li class="text-red-200">Failed to load counts.</li>'; // Display error for counts
+            categoryProductCountsList.innerHTML = '<li class="text-red-200">Failed to load counts.</li>';
         }
     }
 
@@ -224,7 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Store Management Functions ---
 
     async function fetchStoreDetails() {
-        clearMessage(copyMessage); // Keep this for the copy link message
+        clearMessage(copyMessage);
         try {
             currentStore = await apiRequest('/stores/my-store', 'GET');
             storeNameInput.value = currentStore.name;
@@ -249,10 +353,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 removeStoreLogoCheckbox.checked = false;
             }
 
-            // Generate QR code and display public link using the slug
             if (currentStore.slug) {
                 const publicMenuUrl = `${window.location.origin}/menu_display.html?slug=${currentStore.slug}`;
-                // Using window.generateQRCode and window.downloadCanvasAsPNG from utils.js
                 const qrCanvas = window.generateQRCode(publicMenuUrl, qrCodeContainer, 256);
                 if (qrCanvas) {
                     downloadQrBtn.style.display = 'inline-block';
@@ -261,7 +363,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     };
                 }
 
-                // Display the public menu link
                 publicMenuLinkInput.value = publicMenuUrl;
                 copyMenuLinkBtn.style.display = 'inline-block';
 
@@ -359,10 +460,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const categories = await apiRequest('/categories/my-store', 'GET');
             categoryListTableBody.innerHTML = '';
 
-            // Clear all existing options before repopulating
             productCategorySelect.innerHTML = '<option value="">Select a Category</option>';
             editProductCategorySelect.innerHTML = '';
-            productFilterCategorySelect.innerHTML = '<option value="all">All Categories</option>'; // Keep this default option
+            productFilterCategorySelect.innerHTML = '<option value="all">All Categories</option>';
 
             if (categories.length === 0) {
                 categoryListTableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4 text-gray-500">No categories added yet.</td></tr>';
@@ -379,26 +479,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                 `;
 
-                // Populating the 'Add Product' category select
                 const optionAdd = document.createElement('option');
                 optionAdd.value = category._id;
                 optionAdd.textContent = category.name;
                 productCategorySelect.appendChild(optionAdd);
 
-                // Populating the 'Edit Product' category select
                 const optionEdit = document.createElement('option');
                 optionEdit.value = category._id;
                 optionEdit.textContent = category.name;
                 editProductCategorySelect.appendChild(optionEdit);
 
-                // Populating the 'Filter by Category' select
                 const optionFilter = document.createElement('option');
                 optionFilter.value = category._id;
                 optionFilter.textContent = category.name;
                 productFilterCategorySelect.appendChild(optionFilter);
             });
 
-            // Re-select the previously chosen filter category after repopulating
             const currentFilterValue = productFilterCategorySelect.dataset.currentFilter || 'all';
             productFilterCategorySelect.value = currentFilterValue;
 
@@ -440,7 +536,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showMessageModal('Success', 'Category added successfully!', false);
                 categoryNameInput.value = '';
                 await fetchCategories();
-                // When adding/editing categories, re-fetch products with current filter and search term
                 await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
                 updateDashboardOverview();
             } catch (error) {
@@ -476,7 +571,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showMessageModal('Success', 'Category updated successfully!', false);
                 editCategoryModal.classList.add('hidden');
                 await fetchCategories();
-                // When adding/editing categories, re-fetch products with current filter and search term
                 await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
                 updateDashboardOverview();
             } catch (error) {
@@ -490,7 +584,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await apiRequest(`/categories/${id}`, 'DELETE');
             showMessageModal('Success', 'Category deleted successfully!', false);
             await fetchCategories();
-            // When deleting categories, re-fetch products with current filter and search term
             await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
             updateDashboardOverview();
         } catch (error) {
@@ -500,7 +593,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Product Management Functions ---
 
-    // fetchProducts now accepts both categoryId and searchTerm
     async function fetchProducts(categoryId = 'all', searchTerm = '') {
         productListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Loading products...</td></tr>';
         try {
@@ -511,7 +603,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 queryParams.append('category', categoryId);
             }
             if (searchTerm) {
-                queryParams.append('search', searchTerm); // Use 'search' parameter for backend
+                queryParams.append('search', searchTerm);
             }
 
             if (queryParams.toString()) {
@@ -522,9 +614,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const products = await apiRequest(url, 'GET');
 
-            console.log('Frontend: Received products for rendering:', products); // IMPORTANT: Check this log!
+            console.log('Frontend: Received products for rendering:', products);
 
-            productListTableBody.innerHTML = ''; // Clear existing rows
+            productListTableBody.innerHTML = '';
 
             if (products.length === 0) {
                 productListTableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">No products found.</td></tr>';
@@ -609,7 +701,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 productImageInput.value = '';
                 newProductImagePreview.src = '';
                 newProductImagePreview.classList.add('hidden');
-                // Re-fetch products with current filter and search term
                 await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
                 updateDashboardOverview();
             } catch (error) {
@@ -681,7 +772,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await apiRequest(`/products/${editProductIdInput.value}`, 'PUT', formData, true, true);
                 showMessageModal('Success', 'Product updated successfully!', false);
                 editProductModal.classList.add('hidden');
-                // Re-fetch products with current filter and search term
                 await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
                 updateDashboardOverview();
             } catch (error) {
@@ -694,7 +784,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await apiRequest(`/products/${id}`, 'DELETE');
             showMessageModal('Success', 'Product deleted successfully!', false);
-            // Re-fetch products with current filter and search term
             await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
             updateDashboardOverview();
         } catch (error) {
@@ -770,6 +859,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initial load of products, applying default filter ('all') and empty search term
         await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
         await updateDashboardOverview();
+
+        // NEW: Initial display setup for SPA
+        const initialSection = window.location.hash ? window.location.hash.substring(1) : 'dashboard-overview';
+        showSection(initialSection);
+        // If the initial section is product-management, default to list-products sub-section
+        if (initialSection === 'product-management') {
+            showProductSubSection('list-products');
+        }
+        // Set active class for the initial sidebar link
+        const activeLink = document.querySelector(`.sidebar-link[href="#${initialSection}"]`);
+        if (activeLink) {
+            activeLink.classList.add('bg-gray-700', 'text-blue-300');
+            // If it's a product sub-link, also highlight the main Products link
+            if (['add-product', 'list-products'].includes(initialSection)) {
+                document.querySelector('a[href="#product-management"]').classList.add('bg-gray-700', 'text-blue-300');
+            }
+        }
     })();
 });
 
