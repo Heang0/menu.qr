@@ -12,12 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mobileMenuButton = document.getElementById('mobileMenuButton');
     const sidebar = document.getElementById('sidebar');
 
-    // Main Content Sections (NEW: Added IDs to sections)
-    const dashboardOverviewSection = document.getElementById('dashboard-overview-section');
-    const storeManagementSection = document.getElementById('store-management-section');
-    const categoryManagementSection = document.getElementById('category-management-section');
-    const productManagementSection = document.getElementById('product-management-section');
-
     // Dashboard Overview
     const totalProductsCount = document.getElementById('totalProductsCount');
     const totalCategoriesCount = document.getElementById('totalCategoriesCount');
@@ -74,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editProductImageInput = document.getElementById('editProductImage');
     const currentProductImageImg = document.getElementById('currentProductImage');
     const cancelEditProductBtn = document.getElementById('cancelEditProductBtn');
-    const yourProductsListSection = document.getElementById('your-products-list-section'); // New reference for scrolling
 
     // Product Image Popup Modal (for admin page)
     const productImagePopupModal = document.getElementById('productImagePopupModal');
@@ -181,54 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
-
-    // --- Section Visibility Management (NEW) ---
-    const allSections = document.querySelectorAll('main section[id$="-section"]'); // Selects all sections ending with -section
-
-    function hideAllSections() {
-        allSections.forEach(section => {
-            section.classList.add('hidden');
-        });
-    }
-
-    function showSection(sectionId, scrollToElementId = null) {
-        hideAllSections();
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-            // Scroll to the top of the main content area after showing a section
-            document.querySelector('main').scrollTop = 0; 
-
-            // If a specific element ID is provided, scroll to it after a short delay
-            if (scrollToElementId) {
-                setTimeout(() => {
-                    const elementToScrollTo = document.getElementById(scrollToElementId);
-                    if (elementToScrollTo) {
-                        elementToScrollTo.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                }, 100); // Small delay to allow section to become visible
-            }
-        }
-    }
-
-    // Event listeners for sidebar links (NEW: Uses data-target attribute)
-    document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default anchor link behavior
-            const targetSectionId = e.currentTarget.dataset.target;
-            const scrollToElementId = e.currentTarget.dataset.scrollTo; // Get the new data-scroll-to attribute
-
-            showSection(targetSectionId, scrollToElementId);
-
-            // Optional: Update active state for sidebar links (highlighting)
-            document.querySelectorAll('.sidebar-link').forEach(innerLink => {
-                innerLink.classList.remove('bg-gray-700', 'text-blue-300', 'active:bg-gray-700');
-                innerLink.classList.add('hover:bg-gray-700', 'hover:text-blue-300');
-            });
-            e.currentTarget.classList.add('bg-gray-700', 'text-blue-300');
-            e.currentTarget.classList.remove('hover:bg-gray-700', 'hover:text-blue-300'); // Remove hover for active
-        });
-    });
 
     // --- Dashboard Overview Functions ---
     async function updateDashboardOverview() {
@@ -708,13 +653,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         editProductImageInput.value = '';
 
         editProductModal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
     }
 
     if (cancelEditProductBtn) {
         cancelEditProductBtn.addEventListener('click', () => {
             editProductModal.classList.add('hidden');
-            document.body.style.overflow = ''; // Restore scroll
         });
     }
 
@@ -731,7 +674,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (editProductImageInput.files[0]) {
                 formData.append('image', editProductImageInput.files[0]);
             } else if (currentProductImageImg.style.display === 'none' && currentProductImageImg.src === '') {
-                // This condition handles explicit removal if an image was previously present
                 formData.append('image', '');
             }
 
@@ -739,7 +681,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await apiRequest(`/products/${editProductIdInput.value}`, 'PUT', formData, true, true);
                 showMessageModal('Success', 'Product updated successfully!', false);
                 editProductModal.classList.add('hidden');
-                document.body.style.overflow = ''; // Restore scroll
                 // Re-fetch products with current filter and search term
                 await fetchProducts(productFilterCategorySelect.value, productSearchInput.value.trim());
                 updateDashboardOverview();
@@ -824,16 +765,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Initial Data Load on Page Load ---
     (async () => {
-        // Set initial active state for Dashboard Overview
-        const initialLink = document.querySelector('.sidebar-link[data-target="dashboard-overview-section"]');
-        if (initialLink) {
-            initialLink.classList.add('bg-gray-700', 'text-blue-300');
-            initialLink.classList.remove('hover:bg-gray-700', 'hover:text-blue-300');
-        }
-
-        // Show only the dashboard overview section initially
-        showSection('dashboard-overview-section'); 
-
         await fetchStoreDetails();
         await fetchCategories();
         // Initial load of products, applying default filter ('all') and empty search term
