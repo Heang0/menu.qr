@@ -15,13 +15,18 @@ const productSchema = mongoose.Schema(
             default: '',
         },
         price: {
-            type: String, // <--- CHANGED FROM Number TO String
-            required: false, // Price is optional
-            trim: true, // Trim whitespace from the string
-            default: '', // Default to empty string instead of 0
+            type: String,
+            required: false,
+            trim: true,
+            default: '',
         },
         image: {
-            type: String, // URL from Cloudinary
+            type: String,
+            default: '',
+        },
+        imageUrl: {
+            type: String,
+            trim: true,
             default: '',
         },
         category: {
@@ -32,14 +37,13 @@ const productSchema = mongoose.Schema(
         store: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Store',
-            required: true,
+            required: false, // CHANGED TO OPTIONAL
         },
-        // You might want to add an 'order' field for custom sorting within a category
         order: {
             type: Number,
             default: 0,
         },
-        isAvailable: { // e.g., for marking out-of-stock
+        isAvailable: {
             type: Boolean,
             default: true,
         }

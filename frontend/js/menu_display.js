@@ -1,8 +1,26 @@
+
+// Optimize Cloudinary images for delivery (600px)
+function getOptimizedImageUrl(url) {
+    if (!url) return url;
+    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+        return url.replace("/upload/", "/upload/f_auto,q_auto,w_600/")
+    }
+    return url;
+}
+
+
+// Extract slug from path (/menu/ysg)
+const pathParts = window.location.pathname.split("/");
+const slug = pathParts[pathParts.length - 1];
+
 // qr-digital-menu-system/frontend/js/menu_display.js
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const publicSlug = urlParams.get('slug');
+    
+
+if (!slug) {
+  console.error("No publicUrlId found in URL for menu display.");
+}
 
     const menuTitle = document.getElementById('menuTitle');
     const storeHeaderInfo = document.getElementById('storeHeaderInfo');
@@ -14,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const noMenuMessage = document.getElementById('noMenuMessage');
     const searchMenuInput = document.getElementById('searchMenuInput');
     const noSearchResultsMessage = document.getElementById('noSearchResultsMessage');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
 
     const imagePopupModal = document.getElementById('imagePopupModal');
     const popupImage = document.getElementById('popupImage');
@@ -37,6 +56,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const gridViewBtn = document.getElementById('gridViewBtn');
     const listViewBtn = document.getElementById('listViewBtn');
 
+    // MODIFIED: Banner elements for slider
+    const storeBannerContainer = document.getElementById('storeBannerContainer');
+    const sliderDotsContainer = document.getElementById('sliderDots');
+
+    // NEW: Category Selection Modal elements
+    const categorySelectionModal = document.getElementById('categorySelectionModal');
+    const closeCategorySelectionBtn = document.getElementById('closeCategorySelectionBtn');
+    const categoryListContainer = document.getElementById('categoryListContainer');
+
+
     let allProducts = []; // Keep this to store *all* products for search functionality
     let currentFilteredProducts = []; // Stores products currently displayed based on active category or search
     let allCategories = [];
@@ -44,7 +73,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentView = 'grid'; // Default view
     let activeCategoryId = 'all-items'; // Track active category for re-rendering on view change
 
-    if (!publicSlug) {
+    let currentBannerIndex = 0;
+    let bannerInterval; // To hold the interval for automatic sliding
+
+    // Function to prepend CORS proxy if the URL is external and not already proxied
+    function getProxiedImageUrl(url) {
+        if (!url) return '';
+        // Check if the URL is already using the proxy
+        if (url.startsWith('https://corsproxy.io/?')) {
+            return url;
+        }
+        // Check if the URL is from the same origin or cloudinary (which is already allowed by CSP)
+        const isCloudinary = url.includes('res.cloudinary.com');
+        const isPlaceholder = url.includes('placehold.co');
+        const isSameOrigin = url.startsWith(window.location.origin);
+
+        if (!isCloudinary && !isPlaceholder && !isSameOrigin) {
+            return `https://corsproxy.io/?${encodeURIComponent(url)}`;
+        }
+        return url;
+    }
+
+// Optimize Cloudinary images for delivery (safe version)
+function getOptimizedImageUrl(url) {
+    if (!url) return url;
+    // Only optimize Cloudinary images with /upload/
+    if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+        return url.replace('/upload/', '/upload/f_auto,q_auto,w_800/');
+    }
+    // Leave external URLs or previews untouched
+    return url;
+}
+
+
+
+    if (!slug) {
         menuTitle.textContent = 'Menu Not Found';
         storeNameElem.textContent = 'Error: No Store ID provided.';
         loadingMessage.classList.add('hidden');
@@ -66,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (searchTerm) {
                 // If there's a search term, fetch all products and filter locally for simplicity.
                 // For very large menus, you might implement a backend search endpoint.
-                products = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false);
+                products = await apiRequest(`/products/public-store/slug/${slug}`, 'GET', null, false);
                 products = products.filter(product =>
                     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -75,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 // If no search term, fetch products based on the category ID (or all if 'all-items')
                 const queryParams = categoryId && categoryId !== 'all-items' ? { category: categoryId } : null;
-                products = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false, false, queryParams);
+                products = await apiRequest(`/products/public-store/slug/${slug}`, 'GET', null, false, false, queryParams);
             }
             currentFilteredProducts = products; // Update currently displayed products
 
@@ -91,11 +154,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Determine how to render: grouped by category or as a single list
-            // Render as a single list if 'All' tab is active OR if searching
-            const renderAsSingleList = (activeCategoryId === 'all-items' && !searchTerm) || searchTerm;
+            // Determine how to render: grouped by category or as a single list ("All Items" or "Search Results")
+            // This logic is now handled more explicitly by shouldGroupByCategory()
+            const shouldGroup = shouldGroupByCategory();
 
-            if (renderAsSingleList) {
+            if (!shouldGroup) {
                 renderMenuContent(products, []); // Pass an empty array for categories to indicate no grouping
             } else {
                 // If a specific category is selected, filter categoriesToDisplay to only that one
@@ -115,17 +178,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Fetch store details using publicUrlId
-       currentStoreData = await apiRequest(`/stores/public/slug/${publicSlug}`, 'GET', null, false);
+       currentStoreData = await apiRequest(`/stores/public/slug/${slug}`, 'GET', null, false);
         menuTitle.textContent = `${currentStoreData.name}'s Menu`;
         storeNameElem.textContent = currentStoreData.name;
 
         if (currentStoreData.logo) {
-            storeLogoImg.src = currentStoreData.logo;
+            storeLogoImg.src = getOptimizedImageUrl(getProxiedImageUrl(currentStoreData.logo)); // Apply proxy to store logo
             storeLogoImg.style.display = 'block';
         } else {
             storeLogoImg.src = '';
             storeLogoImg.style.display = 'none';
         }
+
+        // MODIFIED: Handle multiple banners for slider
+        // Ensure currentStoreData.banner is an array before checking length
+        if (Array.isArray(currentStoreData.banner) && currentStoreData.banner.length > 0) {
+            storeBannerContainer.classList.remove('hidden');
+            renderBanners(currentStoreData.banner);
+            startBannerSlider();
+        } else {
+            storeBannerContainer.classList.add('hidden');
+            stopBannerSlider();
+        }
+
 
         // Fetch categories (always all categories for the store)
         allCategories = await apiRequest(`/categories/store/${currentStoreData._id}`, 'GET', null, false);
@@ -133,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Fetch all products initially to populate `allProducts` for search
         // This initial fetch populates 'allProducts' for local search filtering.
         // It's separate from 'fetchAndRenderProducts' which handles display logic.
-        allProducts = await apiRequest(`/products/public-store/slug/${publicSlug}`, 'GET', null, false);
+        allProducts = await apiRequest(`/products/public-store/slug/${slug}`, 'GET', null, false);
 
 
         loadingMessage.classList.add('hidden');
@@ -143,7 +218,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Render Category Tabs
+        // Render Category Tabs (at the top)
         function renderCategoryTabs(categoriesToRender, activeTabId = 'all-items') {
             categoryTabs.innerHTML = '';
 
@@ -152,7 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const allA = document.createElement('a');
             allA.href = `#all-items`;
             allA.textContent = 'All';
-            allA.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300', 'cursor-pointer');
+            allA.classList.add('block','cursor-pointer'); // styles applied via CSS chips
             allA.addEventListener('click', async (e) => { // Make async
                 e.preventDefault();
                 activeCategoryId = 'all-items'; // Update active category
@@ -174,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const a = document.createElement('a');
                 a.href = `#cat-${category._id}`;
                 a.textContent = category.name;
-                a.classList.add('block', 'py-2', 'px-4', 'text-gray-700', 'font-medium', 'border-b-2', 'border-transparent', 'hover:border-orange-500', 'hover:text-orange-600', 'transition', 'duration-300', 'cursor-pointer');
+                a.classList.add('block','cursor-pointer'); // styles applied via CSS chips
                 a.addEventListener('click', async (e) => { // Make async
                     e.preventDefault();
                     activeCategoryId = category._id; // Update active category
@@ -183,7 +258,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await fetchAndRenderProducts(category._id); // Fetch products for this category from backend
                     try {
                         document.querySelector(a.hash).scrollIntoView({ behavior: 'smooth' });
-                    } catch (error) {
+                    }
+                    catch (error) {
                         console.warn(`Element ${a.hash} not found for scrolling.`, error);
                     }
                 });
@@ -198,12 +274,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Helper function to set the active category tab
         function setActiveCategoryTab(tabId) {
             document.querySelectorAll('#categoryTabs a').forEach(tab => {
-                tab.classList.remove('border-orange-600', 'text-orange-600');
+                tab.classList.remove('active-chip');
             });
             const activeTab = document.querySelector(`#categoryTabs a[href="#${tabId}"]`);
             if (activeTab) {
-                activeTab.classList.add('border-orange-600', 'text-orange-600');
+                activeTab.classList.add('active-chip');
             }
+        }
+
+        // Helper function to determine if content should be grouped by category
+        function shouldGroupByCategory() {
+            // Group by category if a specific category tab is active AND there's no active search term
+            return activeCategoryId !== 'all-items' && !searchMenuInput.value.trim();
         }
 
         // Render Menu Content based on current view and filtered products/categories
@@ -225,11 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Determine if we should group by categories or just show a single list ("All Items" or "Search Results")
-            // This is true if categoriesToRender is NOT empty AND there's no active search term
-            const shouldGroupByCategory = categoriesToRender.length > 0 && !searchMenuInput.value.trim();
-
-            if (!shouldGroupByCategory) {
+            if (!shouldGroupByCategory()) { // Use the helper function here
                 // Render as a single, mixed list (for "All Items" or "Search Results")
                 const allItemsSection = document.createElement('section');
                 allItemsSection.id = 'all-items-section';
@@ -265,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     categorySection.classList.add('mb-8');
 
                     const categoryTitle = document.createElement('h2');
-                    categoryTitle.classList.add('text-2xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
+                    categoryTitle.classList.add('text-xl', 'font-bold', 'text-gray-800', 'mb-4', 'pb-2', 'border-b', 'border-orange-500', 'sticky', 'top-0', 'bg-gray-100', 'z-10', 'py-2');
                     categoryTitle.textContent = category.name;
                     categorySection.appendChild(categoryTitle);
 
@@ -310,19 +388,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const imgContainer = document.createElement('div');
             imgContainer.classList.add('product-image-container');
             const defaultImage = `https://placehold.co/400x400/e2e8f0/64748b?text=No+Image`;
-            if (product.image) {
-                const img = document.createElement('img');
-                img.src = product.image;
-                img.alt = product.title;
-                img.classList.add('product-image');
-                imgContainer.appendChild(img);
-            } else {
-                const placeholderImg = document.createElement('img');
-                placeholderImg.src = defaultImage;
-                placeholderImg.alt = 'No Image Available';
-                placeholderImg.classList.add('product-image');
-                imgContainer.appendChild(placeholderImg);
-            }
+            
+            // Prioritize imageUrl, then image (Cloudinary), then image (from backend, if not imageUrl), then placeholder
+            const displayImage = getOptimizedImageUrl(getProxiedImageUrl(product.imageUrl || product.image)) || defaultImage;
+
+            const img = document.createElement('img');
+            img.src = displayImage;
+            img.alt = product.title;
+            img.classList.add('product-image');
+            imgContainer.appendChild(img);
             productCard.appendChild(imgContainer);
 
             const cardContent = document.createElement('div');
@@ -335,7 +409,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (product.description) {
                 const description = document.createElement('p');
-                description.classList.add('text-gray-600', 'text-xs', 'mb-2', 'line-clamp-2');
+                // MODIFIED: Add 'product-card-description' class here to ensure bold styling
+                description.classList.add('text-gray-600', 'text-xs', 'mb-2', 'line-clamp-2', 'product-card-description'); 
                 description.textContent = product.description;
                 cardContent.appendChild(description);
             }
@@ -351,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             productCard.addEventListener('click', () => {
                 // Pass product.price to openImagePopup
-                openImagePopup(product.image || defaultImage, product.title, product.description, product.price);
+                openImagePopup(displayImage, product.title, product.description, product.price);
             });
             return productCard;
         }
@@ -362,22 +437,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             listItem.classList.add('product-list-item');
 
             const defaultImage = `https://placehold.co/60x60/e2e8f0/64748b?text=No+Img`;
+            // Prioritize imageUrl, then image (Cloudinary), then image (from backend, if not imageUrl), then placeholder
+            const displayImage = getOptimizedImageUrl(getProxiedImageUrl(product.imageUrl || product.image)) || defaultImage;
 
             const imgContainer = document.createElement('div');
             imgContainer.classList.add('list-image-container');
-            if (product.image) {
-                const img = document.createElement('img');
-                img.src = product.image;
-                img.alt = product.title;
-                img.classList.add('list-image');
-                imgContainer.appendChild(img);
-            } else {
-                const placeholderImg = document.createElement('img');
-                placeholderImg.src = defaultImage;
-                placeholderImg.alt = 'No Image Available';
-                placeholderImg.classList.add('list-image');
-                imgContainer.appendChild(placeholderImg);
-            }
+            const img = document.createElement('img');
+            img.src = displayImage;
+            img.alt = product.title;
+            img.classList.add('list-image');
+            imgContainer.appendChild(img);
             listItem.appendChild(imgContainer);
 
             const listContent = document.createElement('div');
@@ -390,6 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (product.description) {
                 const description = document.createElement('p');
                 description.textContent = product.description;
+                // The CSS already targets '.product-list-item p' so no extra class needed here.
                 listContent.appendChild(description);
             }
             listItem.appendChild(listContent);
@@ -403,7 +473,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             listItem.addEventListener('click', () => {
                 // Pass product.price to openImagePopup
-                openImagePopup(product.image || defaultImage, product.title, product.description, product.price);
+                openImagePopup(displayImage, product.title, product.description, product.price);
             });
             return listItem;
         }
@@ -413,7 +483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         function openImagePopup(imageUrl, productName, productDescription, productPrice) {
             popupImage.src = imageUrl;
             popupProductName.textContent = productName;
-            popupProductDescription.textContent = productDescription || 'No description available.';
+            popupProductDescription.textContent = productDescription || '';
 
             // Set the price in the popup
             if (productPrice !== undefined && productPrice !== null && productPrice !== '') {
@@ -444,7 +514,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!currentStoreData) return;
 
             if (currentStoreData.logo) {
-                modalStoreLogo.src = currentStoreData.logo;
+                modalStoreLogo.src = getOptimizedImageUrl(getProxiedImageUrl(currentStoreData.logo)); // Apply proxy to modal logo
                 modalStoreLogo.style.display = 'block';
             } else {
                 modalStoreLogo.src = '';
@@ -485,6 +555,46 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = '';
         }
 
+        // NEW: Category Selection Modal Functions
+        function openCategorySelectionModal() {
+            categoryListContainer.innerHTML = ''; // Clear previous categories
+
+            // Add "All" option to the modal
+            const allCategoryItem = document.createElement('div');
+            allCategoryItem.classList.add('category-list-item');
+            allCategoryItem.innerHTML = `<span>All Items</span><i class="fas fa-chevron-right"></i>`;
+            allCategoryItem.addEventListener('click', async () => {
+                activeCategoryId = 'all-items';
+                setActiveCategoryTab('all-items'); // Highlight 'All' in top tabs
+                searchMenuInput.value = ''; // Clear search
+                await fetchAndRenderProducts('all-items');
+                closeCategorySelectionModal();
+            });
+            categoryListContainer.appendChild(allCategoryItem);
+
+            allCategories.forEach(category => {
+                const categoryItem = document.createElement('div');
+                categoryItem.classList.add('category-list-item');
+                categoryItem.innerHTML = `<span>${category.name}</span><i class="fas fa-chevron-right"></i>`;
+                categoryItem.addEventListener('click', async () => {
+                    activeCategoryId = category._id;
+                    setActiveCategoryTab(`cat-${category._id}`); // Highlight in top tabs
+                    searchMenuInput.value = ''; // Clear search
+                    await fetchAndRenderProducts(category._id);
+                    closeCategorySelectionModal();
+                });
+                categoryListContainer.appendChild(categoryItem);
+            });
+
+            categorySelectionModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCategorySelectionModal() {
+            categorySelectionModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
 
         // Event listeners for popup close
         if (closeImagePopupBtn) {
@@ -492,6 +602,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         if (closeStoreInfoBtn) {
             closeStoreInfoBtn.addEventListener('click', closeStoreInfoPopup);
+        }
+        // NEW: Event listener for category selection modal close
+        if (closeCategorySelectionBtn) {
+            closeCategorySelectionBtn.addEventListener('click', closeCategorySelectionModal);
         }
 
         // Close popup if clicking on the overlay itself
@@ -506,6 +620,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             storeInfoModal.addEventListener('click', (e) => {
                 if (e.target === storeInfoModal) {
                     closeStoreInfoPopup();
+                }
+            });
+        }
+        // NEW: Close category selection modal if clicking on the overlay itself
+        if (categorySelectionModal) {
+            categorySelectionModal.addEventListener('click', (e) => {
+                if (e.target === categorySelectionModal) {
+                    closeCategorySelectionModal();
                 }
             });
         }
@@ -538,6 +660,138 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        // MODIFIED: Banner Slider Functions
+        function renderBanners(bannerUrls) {
+            storeBannerContainer.innerHTML = ''; // Clear existing banners and dots
+            sliderDotsContainer.innerHTML = '';
+
+            if (!bannerUrls || bannerUrls.length === 0) {
+                storeBannerContainer.classList.add('hidden');
+                return;
+            }
+
+            storeBannerContainer.classList.remove('hidden');
+
+            bannerUrls.forEach((url, index) => {
+                const img = document.createElement('img');
+                img.src = getOptimizedImageUrl(getProxiedImageUrl(url)); // Apply proxy here
+                img.alt = `Store Banner ${index + 1}`;
+                img.classList.add('store-banner-slide');
+                if (index === 0) {
+                    img.classList.add('active'); // First banner is active initially
+                }
+                storeBannerContainer.appendChild(img);
+
+                const dot = document.createElement('span');
+                dot.classList.add('dot');
+                if (index === 0) {
+                    dot.classList.add('active');
+                }
+                dot.addEventListener('click', () => {
+                    showBanner(index);
+                    resetBannerSlider(); // Reset timer on manual navigation
+                });
+                sliderDotsContainer.appendChild(dot);
+            });
+
+            // Append dots container to the banner container
+            storeBannerContainer.appendChild(sliderDotsContainer);
+        }
+
+        function showBanner(index) {
+            const slides = storeBannerContainer.querySelectorAll('.store-banner-slide');
+            const dots = sliderDotsContainer.querySelectorAll('.dot');
+
+            if (slides.length === 0) return;
+
+            // Loop back to start if index is out of bounds
+            if (index >= slides.length) {
+                currentBannerIndex = 0;
+            } else if (index < 0) {
+                currentBannerIndex = slides.length - 1;
+            } else {
+                currentBannerIndex = index;
+            }
+
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === currentBannerIndex) {
+                    slide.classList.add('active');
+                }
+            });
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active');
+                if (i === currentBannerIndex) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function nextBanner() {
+            showBanner(currentBannerIndex + 1);
+        }
+
+        function startBannerSlider() {
+            stopBannerSlider(); // Clear any existing interval
+            if (currentStoreData && Array.isArray(currentStoreData.banner) && currentStoreData.banner.length > 1) {
+                bannerInterval = setInterval(nextBanner, 5000); // Change banner every 5 seconds
+            }
+        }
+
+        function stopBannerSlider() {
+            if (bannerInterval) {
+                clearInterval(bannerInterval);
+            }
+        }
+
+        function resetBannerSlider() {
+            stopBannerSlider();
+            startBannerSlider();
+        }
+
+        
+        // --- Mobile app helpers: bottom nav + fab ---
+        const bottomNavHome = document.getElementById('navHome');
+        const bottomNavCategories = document.getElementById('navCategories');
+        const bottomNavProfile = document.getElementById('navProfile');
+        const fabScrollTop = document.getElementById('fabScrollTop');
+
+        function setActiveBottom(button) {
+            [bottomNavHome, bottomNavCategories, bottomNavProfile].forEach(b => b && b.classList.remove('active'));
+            button && button.classList.add('active');
+        }
+
+        bottomNavHome?.addEventListener('click', () => {
+            setActiveBottom(bottomNavHome);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // MODIFIED: This now opens the new category selection modal
+        bottomNavCategories?.addEventListener('click', () => {
+            setActiveBottom(bottomNavCategories);
+            openCategorySelectionModal(); // Open the new category selection modal
+        });
+
+        bottomNavProfile?.addEventListener('click', () => {
+            setActiveBottom(bottomNavProfile);
+            // Open the Store Info popup as a "Profile"
+            openStoreInfoPopup();
+        });
+
+        // Show FAB when scrolled down a bit
+        window.addEventListener('scroll', () => {
+            const scrolled = window.scrollY || document.documentElement.scrollTop;
+            if (fabScrollTop) {
+                if (scrolled > 300) fabScrollTop.classList.remove('hidden');
+                else fabScrollTop.classList.add('hidden');
+            }
+        });
+
+        fabScrollTop?.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
         // Initial render
         renderCategoryTabs(allCategories, 'all-items'); // Set 'All' as active initially
         await fetchAndRenderProducts('all-items'); // Initial fetch of all products
@@ -551,7 +805,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             await fetchAndRenderProducts(null, searchTerm); // Pass null for category, searchTerm for search
         });
+// --- Search functionality with clear button toggle ---
+searchMenuInput.addEventListener('input', async (e) => {
+    const searchTerm = e.target.value.toLowerCase();
 
+    if (searchTerm.length > 0) {
+        clearSearchBtn.classList.remove('hidden'); // show clear button
+    } else {
+        clearSearchBtn.classList.add('hidden'); // hide clear button
+    }
+
+    activeCategoryId = 'all-items';
+    setActiveCategoryTab('all-items');
+    await fetchAndRenderProducts(null, searchTerm);
+});
+
+clearSearchBtn.addEventListener('click', async () => {
+    searchMenuInput.value = '';
+    clearSearchBtn.classList.add('hidden'); // hide again
+    activeCategoryId = 'all-items';
+    setActiveCategoryTab('all-items');
+    await fetchAndRenderProducts('all-items');
+});
+
+// Add this function to fix the stopBannerSlider error
+function stopBannerSlider() {
+    const bannerSlider = document.getElementById('bannerSlider');
+    if (bannerSlider) {
+        bannerSlider.innerHTML = '';
+    }
+    // Clear any existing intervals
+    if (window.bannerInterval) {
+        clearInterval(window.bannerInterval);
+        window.bannerInterval = null;
+    }
+}
+
+// Make sure it's available globally
+window.stopBannerSlider = stopBannerSlider;
 
     } catch (error) {
         console.error('Error fetching menu:', error.message);
@@ -561,5 +852,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         menuTitle.textContent = 'Menu Load Error';
         storeNameElem.textContent = 'Error loading menu details.';
         storeLogoImg.style.display = 'none';
+        storeBannerContainer.classList.add('hidden'); // Hide banner container on error
+        stopBannerSlider(); // Stop slider on error
     }
 });
