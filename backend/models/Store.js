@@ -97,7 +97,7 @@ const storeSchema = mongoose.Schema(
             default: '',
             validate: {
                 validator: function(v) {
-                    if (!v || v.trim() === '') return true;
+                    if (!v || v.trim().length === 0) return true;
                     return validator.isURL(v, {
                         protocols: ['http', 'https'],
                         require_protocol: true,
@@ -162,7 +162,7 @@ const storeSchema = mongoose.Schema(
             default: '',
             validate: {
                 validator: function(v) {
-                    if (!v || v.trim() === '') return true;
+                    if (!v || v.trim().length === 0) return true;
                     return validator.isURL(v, {
                         protocols: ['http', 'https'],
                         require_protocol: true,
