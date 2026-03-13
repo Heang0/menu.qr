@@ -435,7 +435,7 @@ storeSchema.methods.getFormattedPhone = function() {
 
 // Static method to find active stores
 storeSchema.statics.findActive = function() {
-    return this.find({ isActive: true })
+    return this.find({ isActive: { $ne: false } })
         .populate('admin', 'name email')
         .sort({ lastActive: -1 });
 };
@@ -448,7 +448,7 @@ storeSchema.statics.findBySlug = function(slug) {
     
     return this.findOne({ 
         slug: slug.toLowerCase(),
-        isActive: true 
+        isActive: { $ne: false } 
     }).populate('admin', 'name email');
 };
 
@@ -518,7 +518,7 @@ storeSchema.index({
 
 // Query helper for active stores
 storeSchema.query.active = function() {
-    return this.where({ isActive: true });
+    return this.where({ isActive: { $ne: false } });
 };
 
 // Query helper for stores with specific language

@@ -210,7 +210,7 @@ router.get('/public/slug/:slug', async (req, res) => {
     try {
         const store = await Store.findOne({ 
             slug: req.params.slug,
-            isActive: true 
+            isActive: { $ne: false } 
         }).populate('admin', 'name email').select('-publicUrlId'); // Remove sensitive fields
 
         if (!store) {

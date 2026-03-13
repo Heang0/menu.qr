@@ -204,7 +204,7 @@ router.get('/website', async (req, res) => {
         
         // Only get products that don't have a store field (superadmin products)
         const products = await Product.find({ 
-            isAvailable: true,
+            isAvailable: { $ne: false },
             store: { $exists: false } // Only products without store field (superadmin products)
         })
         .populate('category', 'name')
@@ -233,7 +233,7 @@ router.get('/public-store/slug/:slug', async (req, res) => {
         
         let filter = { 
             store: store._id,
-            isAvailable: true
+            isAvailable: { $ne: false }
         };
 
         if (category && category !== 'all-items' && category !== 'all') {

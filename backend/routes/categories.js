@@ -69,7 +69,7 @@ router.get('/website', categoryLimiter, async (req, res) => {
         // Only get active superadmin categories
         const categories = await Category.find({ 
             store: { $exists: false },
-            isActive: true
+            isActive: { $ne: false }
         })
         .select('name order')
         .sort('order name')
