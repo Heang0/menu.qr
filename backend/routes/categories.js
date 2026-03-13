@@ -465,7 +465,7 @@ router.get('/public-store/:storeId', categoryLimiter, async (req, res) => {
 
         const categories = await Category.find({ 
             store: req.params.storeId,
-            isActive: true
+            isActive: { $ne: false }
         })
         .select('name order')
         .sort('order name');
@@ -484,7 +484,7 @@ router.get('/store/slug/:slug', categoryLimiter, async (req, res) => {
     try {
         const store = await Store.findOne({ 
             slug: req.params.slug,
-            isActive: true
+            isActive: { $ne: false }
         }).select('_id name');
         
         if (!store) {
