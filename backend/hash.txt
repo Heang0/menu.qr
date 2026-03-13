@@ -1,10 +1,16 @@
-const bcrypt = require("bcrypt");
-const password = "_______";
-bcrypt.hash(password, 10, (err, hash) => {
-  if (err) throw err;
-  console.log(hash);
-});
+# hashpw
+# // const bcrypt = require('bcrypt');
 
+# // const plaintextPassword = '__________'; 
+# // const saltRounds = 10;
+
+# // bcrypt.hash(plaintextPassword, saltRounds, (err, hash) => {
+# //   if (err) {
+# //     console.error('Error hashing password:', err);
+# //   } else {
+# //     console.log('Hashed password:', hash);
+# //   }
+ });
 
 # then run 
 # node hash.js
