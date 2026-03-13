@@ -5,7 +5,7 @@ const API_BASE_URL = (() => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         return 'http://localhost:5000/api';
     } else {
-        return 'https://menuqrcode.onrender.com/api';
+        return '/api';
     }
 })();
 

@@ -56,7 +56,7 @@ app.use(helmet({
                 "http:",
                 "blob:"
             ],
-            connectSrc: ["'self'", "https://generativelanguage.googleapis.com"],
+            connectSrc: ["'self'", "https://generativelanguage.googleapis.com", "https://menu-qr-61oz.onrender.com"],
             objectSrc: ["'none'"],
             mediaSrc: ["'self'"],
             frameSrc: ["'self'", "https://www.google.com"],
@@ -84,7 +84,7 @@ const corsOptions = {
         const allowedOrigins = [
             'http://localhost:5000',
             'http://localhost:3000',
-            'https://menuqrcode.onrender.com',
+            'https://menu-qr-61oz.onrender.com',
         ];
         
         if (allowedOrigins.indexOf(origin) !== -1) {
