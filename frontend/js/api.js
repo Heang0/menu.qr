@@ -9,6 +9,16 @@ const API_BASE_URL = (() => {
     }
 })();
 
+// Security: Suppress all console output in production to prevent token/data leakage
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.log = () => {};
+    console.warn = () => {};
+    console.debug = () => {};
+    console.info = () => {};
+    // Keep console.error for real error visibility
+}
+
+
 // Security: Request timeout (8 seconds for better UX)
 const REQUEST_TIMEOUT = 8000;
 
